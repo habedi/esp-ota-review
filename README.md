@@ -36,14 +36,14 @@ cd esp-ota-review
 ```shell
 nix develop
 
-# Check the SDK revisions and install or repair the tools
+# Check the SDK revisions and install or repair the tools (this may take a while)
 make setup
 ```
 
 #### 3. Run the tests to show the bugs
 
 ```bash
-# This may take a while to run
+# This may take a while to run too
 make test
 ```
 
