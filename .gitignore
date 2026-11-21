@@ -1,0 +1,7 @@
+build/
+tmp/
+__pycache__/
+*.local.md
+.idea/
+managed_components/
+*.pdf

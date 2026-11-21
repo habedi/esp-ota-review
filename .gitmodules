@@ -1,0 +1,6 @@
+[submodule "external/esp-idf-review"]
+	path = external/esp-idf-review
+	url = https://github.com/espressif/esp-idf.git
+[submodule "external/esp-idf-v6.1.1"]
+	path = external/esp-idf-v6.1.1
+	url = https://github.com/espressif/esp-idf.git
