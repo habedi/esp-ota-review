@@ -2,7 +2,7 @@ TESTS := tests/reproduce-bugs
 BUILD := build/ota-qemu
 PYTHON := $(BUILD)/venv/bin/python
 QEMU := $(BUILD)/qemu/bin/qemu-system-xtensa
-SLIDES := presentation/zaptec-tech-case-pres.tex
+SLIDES := docs/presentation/zaptec-tech-case-pres.tex
 SLIDES_PDF := build/presentation/zaptec-tech-case-pres.pdf
 
 .DEFAULT_GOAL := help
