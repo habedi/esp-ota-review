@@ -1,14 +1,14 @@
-## Zaptec's Technical Case Review
+## Zaptec's Technical Review Case
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/habedi/esp-ota-review/tests.yml?label=tests&style=flat&labelColor=282c34&logo=github&logoColor=white)](https://github.com/habedi/esp-ota-review/actions/workflows/tests.yml)
 [![Documentation](https://img.shields.io/badge/docs-latest-007ec6?style=flat&labelColor=282c34&logo=read-the-docs&logoColor=white)](docs)
 [![License](https://img.shields.io/badge/license-Apache--2.0-007ec6?style=flat&labelColor=282c34&logo=open-source-initiative&logoColor=white)](LICENSE)
 
-First review
+Review
 the [esp_https_ota.c](https://github.com/espressif/esp-idf/blob/7ad199d14a5d0fd2f61193c0f8a51a5d2bfa2c00/components/esp_https_ota/src/esp_https_ota.c)
 and [simple_ota_example.c](https://github.com/espressif/esp-idf/blob/07bfc09d0c8837b4d149e1151c57635a0c02755a/examples/system/ota/simple_ota_example/main/simple_ota_example.c).
 (The first file implements the over-the-air (OTA) update and the second file shows an example use case of the OTA solution.)
-Then try to answer the following questions:
+Then answer the following questions:
 
 1. Are there bugs in the OTA implementation?
 2. What can go wrong when calling `esp_https_ota` wrapper function as it is implemented?
@@ -47,7 +47,7 @@ make test
 After the tests ran, the results will be stored in `build/ota-qemu/` as two CSV files.
 
 > [!IMPORTANT]
-> This step needs an x86-64 Linux host to run.
+> This step needs an x86-64 Linux machine to run.
 
 #### 4. Build the presentation
 
