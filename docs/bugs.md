@@ -1,5 +1,15 @@
 ## The (Potential) Bugs
 
+I checked the code and found a few potential bugs in the OTA solution.
+I created a test for each bug and ran it on the version of the code that is checked out in `external/esp-idf-review` and `external/esp-idf-v6.1.1`.
+
+The information about the versions of the ESP-IDF SDK that are pinned as Git submodules (in `external/`):
+
+| Checkout                  | Revision                                                  |
+|---------------------------|-----------------------------------------------------------|
+| `external/esp-idf-review` | `7ad199d14a5d0fd2f61193c0f8a51a5d2bfa2c00` (tag `v4.2.1`) |
+| `external/esp-idf-v6.1.1` | `051e4c4eb20346e043cdd47bc388fde75ff8af63` (tag `v6.1.1`) |
+
 | Bug description                       | Location in code                                                                                                                                                                                                                                                                                               | Fix verified                                                                                                        | Was reported?                                                                                                                  |
 |---------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | False success on boot selection       | [L360](https://github.com/espressif/esp-idf/blob/7ad199d14a5d0fd2f61193c0f8a51a5d2bfa2c00/components/esp_https_ota/src/esp_https_ota.c#L360)                                                                                                                                                                   | [v5.1.3](https://github.com/espressif/esp-idf/commit/d778b07b2213370e1603d1aadf7b60393b3f7569) on the 5.1 branch    | [#12635](https://github.com/espressif/esp-idf/issues/12635) (exact)                                                            |
