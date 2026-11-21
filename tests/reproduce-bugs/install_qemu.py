@@ -1,10 +1,10 @@
 """Download and verify the pinned Linux x86-64 QEMU archive."""
 import hashlib
 import json
-from pathlib import Path
 import subprocess
-from tempfile import TemporaryDirectory
 import urllib.request
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 
 def sha256(path):
@@ -12,8 +12,10 @@ def sha256(path):
 
 
 root = Path(__file__).resolve().parents[2]
-manifest = json.loads(Path(__file__).with_name('qemu-tools.json').read_text())
-release = manifest['tools'][0]['versions'][0]['linux-amd64']
+manifest = json.loads((root / 'external/esp-idf-v6.1.1/tools/tools.json').read_text())
+qemu = next(tool for tool in manifest['tools'] if tool['name'] == 'qemu-xtensa')
+release = next(version['linux-amd64'] for version in qemu['versions']
+               if version['status'] == 'recommended')
 archive = root / 'build/ota-qemu/tools/dist' / release['url'].rsplit('/', 1)[1]
 archive.parent.mkdir(parents=True, exist_ok=True)
 if not archive.is_file() or sha256(archive) != release['sha256']:

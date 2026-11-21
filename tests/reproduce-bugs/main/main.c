@@ -25,15 +25,15 @@ static unsigned read_timeouts;
 static int http_status;
 
 int __real_esp_http_client_get_status_code(esp_http_client_handle_t client);
-int __wrap_esp_http_client_get_status_code(esp_http_client_handle_t client)
-{
+
+int __wrap_esp_http_client_get_status_code(esp_http_client_handle_t client) {
     http_status = __real_esp_http_client_get_status_code(client);
     return http_status;
 }
 
 int __real_esp_http_client_read(esp_http_client_handle_t client, char *buffer, int len);
-int __wrap_esp_http_client_read(esp_http_client_handle_t client, char *buffer, int len)
-{
+
+int __wrap_esp_http_client_read(esp_http_client_handle_t client, char *buffer, int len) {
     int res = __real_esp_http_client_read(client, buffer, len);
 #if ESP_IDF_VERSION_MAJOR >= 6
     if (res == -ESP_ERR_HTTP_EAGAIN) {
@@ -47,8 +47,7 @@ int __wrap_esp_http_client_read(esp_http_client_handle_t client, char *buffer, i
     return res;
 }
 
-void *ota_test_calloc(size_t count, size_t size)
-{
+void *ota_test_calloc(size_t count, size_t size) {
     if (fail_allocation) {
         ++allocations_failed;
         return NULL;
@@ -57,8 +56,8 @@ void *ota_test_calloc(size_t count, size_t size)
 }
 
 esp_err_t __real_esp_ota_set_boot_partition(const esp_partition_t *partition);
-esp_err_t __wrap_esp_ota_set_boot_partition(const esp_partition_t *partition)
-{
+
+esp_err_t __wrap_esp_ota_set_boot_partition(const esp_partition_t *partition) {
     if (fail_boot_selection) {
         ++boot_failures_injected;
         return ESP_ERR_FLASH_OP_FAIL;
@@ -67,18 +66,17 @@ esp_err_t __wrap_esp_ota_set_boot_partition(const esp_partition_t *partition)
 }
 
 esp_err_t __real_esp_ota_begin(const esp_partition_t *partition, size_t size,
-                             esp_ota_handle_t *handle);
+                               esp_ota_handle_t *handle);
+
 esp_err_t __wrap_esp_ota_begin(const esp_partition_t *partition, size_t size,
-                             esp_ota_handle_t *handle)
-{
+                               esp_ota_handle_t *handle) {
     ++flash_begin_calls;
     return __real_esp_ota_begin(partition, size, handle);
 }
 
 static void run_case(const char *name, const char *path, esp_err_t expected,
                      unsigned expected_flash_calls, int expected_http_status,
-                     int timeout_ms, bool expect_timeout)
-{
+                     int timeout_ms, bool expect_timeout) {
     char url[128];
     snprintf(url, sizeof(url), "http://10.0.2.2:18080/%s", path);
     esp_http_client_config_t config = {
@@ -89,7 +87,7 @@ static void run_case(const char *name, const char *path, esp_err_t expected,
     http_status = 0;
     printf("CASE_START %s\n", name);
 #if ESP_IDF_VERSION_MAJOR >= 6
-    esp_https_ota_config_t ota_config = { .http_config = &config };
+    esp_https_ota_config_t ota_config = {.http_config = &config};
     esp_err_t actual = esp_https_ota(&ota_config);
 #else
     esp_err_t actual = esp_https_ota(&config);
@@ -99,15 +97,15 @@ static void run_case(const char *name, const char *path, esp_err_t expected,
     bool timeout_ok = !expect_timeout || (read_timeouts >= 1 && read_timeouts <= 5);
     bool passed = actual == expected && flash_begin_calls == expected_flash_calls &&
                   http_status == expected_http_status && injected && timeout_ok;
-    printf("CASE_RESULT %s %s actual=%d expected=%d flash_begin=%u expected_flash_begin=%u allocation_failures=%u boot_failures=%u http_status=%d read_timeouts=%u\n",
-           name, passed ? "PASS" : "FAIL", actual, expected, flash_begin_calls,
-           expected_flash_calls, allocations_failed, boot_failures_injected,
-           http_status, read_timeouts);
+    printf(
+        "CASE_RESULT %s %s actual=%d expected=%d flash_begin=%u expected_flash_begin=%u allocation_failures=%u boot_failures=%u http_status=%d read_timeouts=%u\n",
+        name, passed ? "PASS" : "FAIL", actual, expected, flash_begin_calls,
+        expected_flash_calls, allocations_failed, boot_failures_injected,
+        http_status, read_timeouts);
     fflush(stdout);
 }
 
-void app_main(void)
-{
+void app_main(void) {
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());

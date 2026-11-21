@@ -26,8 +26,16 @@ class QemuInstallTests(unittest.TestCase):
             project.mkdir(parents=True)
             installer = project / "install_qemu.py"
             shutil.copyfile(Path(__file__).resolve().parents[1] / installer.name, installer)
-            manifest = {"tools": [{"versions": [{"linux-amd64": release}]}]}
-            (project / "qemu-tools.json").write_text(json.dumps(manifest))
+            manifest = {"tools": [
+                {"name": "another-tool"},
+                {"name": "qemu-xtensa", "versions": [
+                    {"status": "supported"},
+                    {"status": "recommended", "linux-amd64": release},
+                ]},
+            ]}
+            manifest_path = root / "external/esp-idf-v6.1.1/tools/tools.json"
+            manifest_path.parent.mkdir(parents=True)
+            manifest_path.write_text(json.dumps(manifest))
             archive = root / "build/ota-qemu/tools/dist/qemu.tar.xz"
 
             with patch("urllib.request.urlretrieve", side_effect=interrupted_download):

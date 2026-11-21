@@ -43,6 +43,4 @@ with no total time limit. Over plain TCP, a clean peer close returns `-1` in `tc
 
 ### Other Related Issues
 
-A wider review of ESP-IDF OTA issues and commits is recorded in [related-issues.md](related-issues.md). Those findings come from upstream issue review and source inspection against `v4.2.1` (`7ad199d14a`) and `v6.1.1` rather than our single-core ESP32 QEMU suite over plain HTTP.
-
-Outside the four bugs above, `esp_https_ota.c` at `7ad199d14a` also allows plain HTTP URLs and HTTPS downgrade redirects ([eef3b0bf](https://github.com/espressif/esp-idf/commit/eef3b0bf)), blocks certificate bundles and the global certificate authority store ([#5504](https://github.com/espressif/esp-idf/issues/5504)), and lacks redirect limits in `_http_connect()`. Underlying `esp_ota_ops` and runtime risks include memory mapping failures during image validation ([#16968](https://github.com/espressif/esp-idf/issues/16968)), missing concurrent OTA locks ([#18127](https://github.com/espressif/esp-idf/issues/18127)), false success on rollback confirmation retries ([#19413](https://github.com/espressif/esp-idf/issues/19413)), and an erase failure partition lock bug still present in `v6.1.1` ([#19439](https://github.com/espressif/esp-idf/issues/19439)).
+[Related ESP-IDF OTA Issues](related-issues.md) covers findings from upstream issue reports and source review of `v4.2.1` and `v6.1.1`.

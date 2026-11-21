@@ -4,7 +4,6 @@ PYTHON := $(BUILD)/venv/bin/python
 QEMU := $(BUILD)/qemu/bin/qemu-system-xtensa
 SLIDES := presentation/zaptec-tech-case-pres.tex
 SLIDES_PDF := build/presentation/zaptec-tech-case-pres.pdf
-PRE_COMMIT_CONFIG := pre-commit-config.yaml
 
 .DEFAULT_GOAL := help
 .DELETE_ON_ERROR:
@@ -40,12 +39,10 @@ $(SLIDES_PDF): $(SLIDES)
 	pdflatex -halt-on-error -interaction=nonstopmode -output-directory=$(@D) $<
 
 hooks:
-	uvx pre-commit run --config $(PRE_COMMIT_CONFIG) --hook-stage pre-push --all-files
+	uvx pre-commit run --hook-stage pre-push --all-files
 
 SDK_REVIEW := external/esp-idf-review
 SDK_NEWEST := external/esp-idf-v6.1.1
-SDK_REVIEW_REVISION := 7ad199d14a5d0fd2f61193c0f8a51a5d2bfa2c00
-SDK_NEWEST_REVISION := 051e4c4eb20346e043cdd47bc388fde75ff8af63
 TOOLS := $(BUILD)/tools
 TOOLS_NEWEST := $(BUILD)/tools-v6.1.1
 CC_REVIEW := $(TOOLS)/tools/xtensa-esp32-elf/esp-2020r3-8.4.0/xtensa-esp32-elf/bin/xtensa-esp32-elf-gcc
@@ -60,10 +57,6 @@ setup-host:
 	}
 
 setup-sdks: setup-host
-	@git ls-files --error-unmatch -- "$(SDK_REVIEW)" >/dev/null 2>&1 || \
-		git update-index --add --cacheinfo 160000,"$(SDK_REVIEW_REVISION)","$(SDK_REVIEW)"
-	@git ls-files --error-unmatch -- "$(SDK_NEWEST)" >/dev/null 2>&1 || \
-		git update-index --add --cacheinfo 160000,"$(SDK_NEWEST_REVISION)","$(SDK_NEWEST)"
 	git submodule update --init --recursive --checkout --depth 1 --single-branch --filter=blob:none
 
 # The venv can lose its interpreter while the dependency stamp still exists.
@@ -85,8 +78,10 @@ setup-newest: | setup-sdks $(PYTHON_STAMP)
 		$(NEWEST_ENV) bash "$(SDK_NEWEST)/install.sh" esp32 && ( $(NEWEST_CHECK) ); \
 	fi
 
+$(SDK_NEWEST)/tools/tools.json: | setup-sdks
+
 # Tar restores the binary's release timestamp.
-$(QEMU): $(TESTS)/install_qemu.py $(TESTS)/qemu-tools.json | $(PYTHON_STAMP)
+$(QEMU): $(TESTS)/install_qemu.py $(SDK_NEWEST)/tools/tools.json | $(PYTHON_STAMP)
 	"$(PYTHON)" "$<"
 	touch "$@"
 
