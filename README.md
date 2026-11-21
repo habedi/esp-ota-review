@@ -65,7 +65,7 @@ make console-newest  # ESP-IDF v6.1.1
 > [!TIP]
 > At the `esp32>` prompt, enter `state` to see the currently used partition (running), selected boot partition, next OTA target, and free heap memory.
 > Enter `run` to run the test suite (which performs OTA updates).
-> After `SUITE_DONE` message, enter `state` again to inspect the same guest.
+> After seeing the `SUITE_DONE` message, enter `state` again to inspect the same guest state after the OTA updates ran.
 > Press `Ctrl+C` to exit and enter `help` to see the available commands.
 
 #### 4. Build the presentation
