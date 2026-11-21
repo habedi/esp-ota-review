@@ -170,7 +170,7 @@
 \begin{document}
 
 % Slide 1: Table of contents
-    \begin{frame}{Table of Contents}
+    \begin{frame}{The Technical Case (Table of Contents)}
         \begingroup
         \renewcommand{\arraystretch}{1.45}
         \small
@@ -187,14 +187,14 @@
         \endgroup
         \vspace{3mm}
 
-        {\footnotesize\color{Muted} The OTA process overview is on the next slide. Supplimentary materials on the last slide.}
+        {\footnotesize\color{Muted} The OTA process overview is on slide 2. Supplementary materials are on slide 16.}
     \end{frame}
 
 
     \section{What can go wrong?}
 
 % Slide 2: Overview flow
-    \begin{frame}{The OTA update stages}
+    \begin{frame}{The OTA update stages (Preamble)}
         \begin{center}
             \begin{tikzpicture}[node distance=5mm]
                 \node[stage] (download) {Download\\and write};
@@ -230,7 +230,7 @@
     \end{frame}
 
 % Slide 3: Bug 1
-    \begin{frame}[fragile,label=ota-bugs]{Boot selection can fail, but \code{ESP\_OK} is returned}
+    \begin{frame}[fragile,label=ota-bugs]{Boot selection can fail, but \code{ESP\_OK} is returned (Bug\#1)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.53\textwidth}
                 \srcbar{\code{esp\_https\_ota\_finish()}}{\pinnedcode{\#L340-L366}{lines 340 to 366}}
@@ -261,7 +261,7 @@ return err;
     \end{frame}
 
 % Slide 4: Bug 2
-    \begin{frame}[fragile]{Setup loses the exact error}
+    \begin{frame}[fragile]{Setup loses the exact error (Bug\#2)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.55\textwidth}
                 \srcbar{\code{esp\_https\_ota()}}{\pinnedcode{\#L392-L396}{lines 392 to 396}}
@@ -280,8 +280,8 @@ if (https_ota_handle == NULL) {
                 }
                 \vspace{2.5mm}
                 \accentcard{Ink}{RowTint}{Why this matters}{%
-                    The header \pinnedhdr{\#L53-L60}{\code{esp\_https\_ota.h}} (lines 53 to 60) says the error code should be exact.)\par
-                    This leads to the situation where the retry code is always a general failure error.%
+                    The header \pinnedhdr{\#L53-L60}{\code{esp\_https\_ota.h}} (lines 53 to 60) documents specific error codes.\par
+                    The wrapper gives the retry logic a generic failure code when setup fails.%
                 }
             \end{column}
         \end{columns}
@@ -289,7 +289,7 @@ if (https_ota_handle == NULL) {
     \end{frame}
 
 % Slide 5: Bug 3
-    \begin{frame}[fragile]{HTTP errors can start a flash update}
+    \begin{frame}[fragile]{HTTP errors can start a flash update (Bug\#3)}
         \begin{center}
             \begin{tikzpicture}[node distance=5mm]
                 \node[rejected] (http) {HTTP 404\\or 500};
@@ -325,7 +325,7 @@ if (process_again(status_code)) {
     \end{frame}
 
 % Slide 6: Bug 4
-    \begin{frame}[fragile]{The wrapper function has no running time limit}
+    \begin{frame}[fragile]{The wrapper has no overall time limit (Bug\#4)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.54\textwidth}
                 \srcbar{\code{esp\_https\_ota\_perform()}}{\pinnedcode{\#L285-L306}{lines 285 to 306, 398 to 403}}
@@ -361,7 +361,7 @@ if (data_read == 0) {
     \end{frame}
 
 % Slide 7: QEMU results
-    \begin{frame}{One baseline and five bug tests (to reproduce the bugs)}
+    \begin{frame}{One baseline and five tests (to reproduce the bugs)}
         \begingroup
         \setlength{\aboverulesep}{0pt}
         \setlength{\belowrulesep}{0pt}
@@ -421,7 +421,7 @@ if (data_read == 0) {
     & \extlink{https://github.com/espressif/esp-idf/blob/v4.4.8/components/esp_https_ota/src/esp_https_ota.c}{v4.4.8}
     & \extlink{https://github.com/espressif/esp-idf/issues/7058}{\#7058}, \extlink{https://github.com/espressif/esp-idf/issues/8195}{\#8195} (related) \\
     \rowcolor{RowTint}
-    No running time limit for OTA
+    No overall time limit for OTA
     & \pinnedcode{\#L285-L306}{Lines 285 to 306}, \pinnedcode{\#L398-L403}{398 to 403}
     & Not fixed yet (in \code{v6.1.1})
     & \extlink{https://github.com/espressif/esp-idf/issues/6364}{\#6364} (related) \\
@@ -457,11 +457,11 @@ if (ret == ESP_OK) {
                 }
                 \vspace{2.5mm}
                 \accentcard{Violet}{VioletTint}{Can the wrapper be safe enough?}{%
-                    No. The one-shot wrapper hides boot and setup errors, skips checks before flash erase, and has no running time limit.%
+                    No. The one-shot wrapper hides boot and setup errors, skips checks before flash erase, and has no overall time limit.%
                 }
             \end{column}
         \end{columns}
-        \note{Target time is 75 seconds. Answer Questions 2 and 3 from the brief. The example restarts on reported success without checking whether the charger is active.}
+        \note{Target time is 75 seconds. Answer questions 2 and 3 from the brief. The example restarts on reported success without checking whether the charger is active.}
     \end{frame}
 
 % Slide 10: Staged API sketch
@@ -513,7 +513,7 @@ return err == ESP_OK ? finish_err : err;
             \end{column}
             \begin{column}{0.47\textwidth}
                 \accentcard{Blue}{BlueTint}{What must change}{%
-                    Use a fixed SDK or backport the fixes. Limit network waits and retries, then test the total running time limit.\par
+                    Use a fixed SDK or backport the fixes. Limit network waits and retries. Then test the overall time limit.\par
                     Even newer SDKs need caller guards for redirect limits and open \code{esp\_ota\_ops} bugs.%
                 }
                 \vspace{2.5mm}
@@ -599,11 +599,11 @@ return err == ESP_OK ? finish_err : err;
     \end{frame}
 
 % Slide 14: Rollout policy
-    \begin{frame}{Use Canary deploymnet (collect some mettrics) before full rollout}
+    \begin{frame}{Use a canary/gradual deployment before a full rollout}
         \begin{center}
             \begin{tikzpicture}[node distance=18mm]
                 \node[stage] (s1) {\textbf{Stage 1}\\Lab tests};
-                \node[stage,right=of s1] (s2) {\textbf{Stage 2}\\Rollout on a small group};
+                \node[stage,right=of s1] (s2) {\textbf{Stage 2}\\Small-group rollout};
                 \node[appstage,right=of s2] (s3) {\textbf{Stage 3}\\Full rollout};
                 \draw[transition] (s1) -- node[above,font=\scriptsize,color=Blue] {Pass} (s2);
                 \draw[transition] (s2) -- node[above,font=\scriptsize,color=Ink] {Healthy} (s3);
@@ -612,13 +612,12 @@ return err == ESP_OK ? finish_err : err;
         \vspace{3mm}
         \noindent
         \begin{minipage}[t]{0.485\textwidth}
-            \accentcard{Blue}{BlueTint}{What to track}{%
-                Track these items/metrics before going for a big rollout:
+            \accentcard{Blue}{BlueTint}{What to keep an eye on}{%
                 \begin{itemize}
                             \setlength{\itemsep}{1pt}\setlength{\topsep}{2pt}\setlength{\parsep}{0pt}
                         \item Reboot tests during idle and active charging
                         \item Firmware version reported after reboot
-                        \item Time to (confirmed) boot and rollback rate
+                        \item Time to confirmed boot and rollback rate
                         \item Chargers that stop reporting
                 \end{itemize}%
             }
@@ -638,7 +637,7 @@ return err == ESP_OK ? finish_err : err;
         \noindent
         \begin{minipage}[t]{0.315\textwidth}
             \pillarcard{Fixed SDK}{%
-                Pick an ESP-IDF version or patched component that passes all the (regression) tests.%
+                Pick an ESP-IDF version or patched component that passes all the regression tests.%
             }
         \end{minipage}\hfill
         \begin{minipage}[t]{0.315\textwidth}
@@ -655,10 +654,10 @@ return err == ESP_OK ? finish_err : err;
     \end{frame}
 
 
-    \section{Supplimentary materials)}
+    \section{Supplementary materials}
 
 % Slide 16: Source and reproduction
-    \begin{frame}{Supplimentary materials (source code and running the tests)}
+    \begin{frame}{Supplementary materials (source code and test instructions)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.50\textwidth}
                 \accentcard{Ink}{RowTint}{Code and upstream links}{%
