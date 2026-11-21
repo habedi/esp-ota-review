@@ -1,6 +1,6 @@
-## The (Potential) Bugs
+## The Bugs
 
-I checked the code and found a few potential bugs in the OTA solution.
+I checked the code and found a few bugs in the OTA solution.
 I created a test for each bug and ran it on the version of the code that is checked out in `external/esp-idf-review` and `external/esp-idf-v6.1.1`.
 
 The information about the versions of the ESP-IDF SDK that are pinned as Git submodules (in `external/`):
