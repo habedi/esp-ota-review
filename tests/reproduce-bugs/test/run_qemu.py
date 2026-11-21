@@ -67,7 +67,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("build", type=Path)
     parser.add_argument("--qemu", type=Path, required=True)
-    parser.add_argument("--log", type=Path, required=True)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--log", type=Path)
+    mode.add_argument("--shell", action="store_true", help="attach the terminal to the guest UART")
     parser.add_argument("--csv", type=Path, help="save the case results to this CSV file")
     parser.add_argument("--expect-buggy", action="store_true",
                         help="require the baseline to pass and all five regression cases to fail")
@@ -84,7 +86,6 @@ def main():
             raise ValueError("Firmware exceeds virtual flash size")
         image[start : start + len(data)] = data
     flash = build / "qemu-flash.bin"
-    flash.write_bytes(image)
     firmware = (build / "ota_repro.bin").read_bytes()
 
     class Handler(http.server.BaseHTTPRequestHandler):
@@ -126,11 +127,18 @@ def main():
                "-machine", "esp32", "-global", "driver=timer.esp32.timg,property=wdt_disable,value=true",
                "-drive", f"file={flash},if=mtd,format=raw",
                "-nic", "user,model=open_eth"]
-    lines = []
-    messages = queue.Queue()
-    args.log.parent.mkdir(parents=True, exist_ok=True)
-    log = args.log.open("w")
+    log = None
     try:
+        flash.write_bytes(image)
+        if args.shell:
+            try:
+                return subprocess.run(command, check=False).returncode
+            except KeyboardInterrupt:
+                return 130
+        lines = []
+        messages = queue.Queue()
+        args.log.parent.mkdir(parents=True, exist_ok=True)
+        log = args.log.open("w")
         process = subprocess.Popen(command, stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT, stdin=subprocess.PIPE,
                                    text=True, errors="replace")
@@ -169,7 +177,8 @@ def main():
     finally:
         server.shutdown()
         server.server_close()
-        log.close()
+        if log is not None:
+            log.close()
     if args.csv:
         write_csv("".join(lines), args.csv)
     results = results_from("".join(lines))

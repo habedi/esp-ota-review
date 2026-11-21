@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/../.."
-variant=${1:?Usage: bash tests/reproduce-bugs/build.sh original|fixed|v6.1.1}
-build_dir="$PWD/build/ota-qemu/$variant"
+build_variant=${1:?Usage: bash tests/reproduce-bugs/build.sh original|fixed|v6.1.1 (optional -console suffix)}
+build_dir="$PWD/build/ota-qemu/$build_variant"
+variant=${build_variant%-console}
+console=OFF
+if [[ "$build_variant" != "$variant" ]]; then console=ON; fi
 case "$variant" in
     original|fixed)
         sdk=esp-idf-review
@@ -29,6 +32,7 @@ if [[ "$variant" == v6.1.1 ]]; then
     set -u
     idf.py -C tests/reproduce-bugs -B "$build_dir" \
         -D "SDKCONFIG=$build_dir/sdkconfig" \
+        -D "OTA_REPRO_CONSOLE=$console" \
         -D 'SDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.v6.1.1' build
 else
     export IDF_TOOLS_PATH="$PWD/build/ota-qemu/tools"
@@ -38,6 +42,6 @@ else
     cmake -S tests/reproduce-bugs -B "$build_dir" -G Ninja \
         -D SDKCONFIG="$build_dir/sdkconfig" \
         -D CMAKE_POLICY_VERSION_MINIMUM=3.5 -D PYTHON_DEPS_CHECKED=1 \
-        -D OTA_REPRO_FIXED="$fixed"
+        -D OTA_REPRO_FIXED="$fixed" -D OTA_REPRO_CONSOLE="$console"
     cmake --build "$build_dir" -j 8
 fi

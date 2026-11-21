@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 set(EXTRA_COMPONENT_DIRS "$ENV{IDF_PATH}/examples/common_components/protocol_examples_common")
 set(COMPONENTS main esptool_py)
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+option(OTA_REPRO_CONSOLE "Build the interactive UART console" OFF)
+idf_build_set_property(OTA_REPRO_CONSOLE "${OTA_REPRO_CONSOLE}")
 project(ota_repro)
 
 idf_component_get_property(ota_lib esp_https_ota COMPONENT_LIB)

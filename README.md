@@ -52,6 +52,19 @@ After the tests ran, the results will be stored in `build/ota-qemu/` as two CSV 
 > [!IMPORTANT]
 > This step needs an x86-64 Linux machine to run.
 
+##### Inspect the Emulated ESP32
+
+```bash
+make console-fixed   # Locally fixed SDK
+make console-buggy   # Pinned review SDK
+make console-newest  # ESP-IDF v6.1.1
+```
+
+At the `esp32>` prompt, enter `state` to see the running partition, selected boot partition, next OTA target, and free heap.
+Enter `run` to run the test suite.
+After `SUITE_DONE`, enter `state` again to inspect the same guest.
+Press Ctrl+C to close QEMU.
+
 #### 4. Build the presentation
 
 ```bash
