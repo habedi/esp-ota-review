@@ -1,10 +1,10 @@
 # Agent Instructions
 
-This repository prepares an ESP-IDF HTTPS OTA code review and reproducible QEMU tests.
+This repository prepares mainly an ESP-IDF HTTPS OTA code review and reproducible QEMU tests.
 
 - Use simple everyday English and keep changes focused.
-- Record commands, findings, failed attempts, and explanations under `docs/`.
-- Keep personal documents, interview logistics, and unfiltered logs in ignored directories like `tmp/`.
+- Record findings, failed attempts, and explanations under `docs/`.
+- Keep personal documents and unfiltered logs in ignored directories like `tmp/`.
 - Run builds in `nix develop` and use `uv` for Python dependencies.
 - The review SDK is pinned to `7ad199d14a5d0fd2f61193c0f8a51a5d2bfa2c00`.
 - Keep SDK sources clean. Generate experimental fixes in build directories.

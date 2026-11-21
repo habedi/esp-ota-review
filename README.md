@@ -1,4 +1,8 @@
-## Zaptec's Technical Case
+## Zaptec's Technical Case Review
+
+[![Tests](https://img.shields.io/github/actions/workflow/status/habedi/esp-ota-review/tests.yml?label=tests&style=flat&labelColor=282c34&logo=github&logoColor=white)](https://github.com/habedi/esp-ota-review/actions/workflows/tests.yml)
+[![Documentation](https://img.shields.io/badge/docs-latest-007ec6?style=flat&labelColor=282c34&logo=read-the-docs&logoColor=white)](docs)
+[![License](https://img.shields.io/badge/license-Apache--2.0-007ec6?style=flat&labelColor=282c34&logo=open-source-initiative&logoColor=white)](LICENSE)
 
 First review
 the [esp_https_ota.c](https://github.com/espressif/esp-idf/blob/7ad199d14a5d0fd2f61193c0f8a51a5d2bfa2c00/components/esp_https_ota/src/esp_https_ota.c)
@@ -66,3 +70,6 @@ The presentation will be available [here](build/presentation/zaptec-tech-case-pr
 
 ---
 
+### License
+
+The content of this repository is licensed under the Apache License, Version 2.0 (see [LICENSE](LICENSE)).
