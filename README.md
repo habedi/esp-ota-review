@@ -22,13 +22,13 @@ explanations.**
 
 ### Quickstart
 
-To follow the steps below, you need to have Git, GNU Make, and [Nix](https://nixos.org/download/) (with flakes enabled) installed on your machine.
+To follow the steps below, you need to have Git and [Nix](https://nixos.org/download/) (with flakes enabled) installed on your machine.
 
 #### 1. Clone the repository
 
 ```shell
-git clone --depth 1 https://github.com/idea-playground/esp-https-ota
-cd esp-https-ota
+git clone --depth 1 https://github.com/habedi/esp-ota-review.git
+cd esp-ota-review
 ```
 
 #### 2. Set up the development environment
