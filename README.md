@@ -1,4 +1,4 @@
-## Zaptec's Technical Review Case
+## Zaptec's Review Case
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/habedi/esp-ota-review/tests.yml?label=tests&style=flat&labelColor=282c34&logo=github&logoColor=white)](https://github.com/habedi/esp-ota-review/actions/workflows/tests.yml)
 [![Documentation](https://img.shields.io/badge/docs-latest-007ec6?style=flat&labelColor=282c34&logo=read-the-docs&logoColor=white)](docs)
@@ -14,6 +14,9 @@ Then answer the following questions:
 2. What can go wrong when calling `esp_https_ota` wrapper function as it is implemented?
 3. How should we use the `esp_https_ota` function in order to ensure sufficient robustness? Is it even possible?
 4. How would we work to make sure that the OTA solution in the product is robust enough?
+
+**Follow the steps in [Quickstart](#quickstart) section and check out the presentation [slides](#4-build-the-presentation) for answers and
+explanations.**
 
 ---
 
