@@ -162,6 +162,8 @@ static void run_console(void) {
         }
         if (strcmp(command, "state") == 0) {
             print_state();
+        } else if (strcmp(command, "clear") == 0) {
+            linenoiseClearScreen();
         } else if (strcmp(command, "run") == 0) {
             if (suite_done) {
                 puts("The suite already ran. Start a fresh QEMU session to run it again.");
@@ -170,7 +172,9 @@ static void run_console(void) {
                 suite_done = true;
             }
         } else if (strcmp(command, "help") == 0) {
-            puts("state  Show OTA partitions and free heap\nrun    Run the OTA suite once");
+            puts("state  Show OTA partitions and free heap\n"
+                 "run    Run the OTA suite once\n"
+                 "clear  Clear the console screen");
         } else if (*command) {
             puts("Unknown command. Type help for commands.");
         }
@@ -180,6 +184,11 @@ static void run_console(void) {
 #endif
 
 void app_main(void) {
+#ifdef OTA_REPRO_CONSOLE
+    // Let the UART line editor read and echo each key before Enter.
+    setvbuf(stdin, NULL, _IONBF, 0);
+    setvbuf(stdout, NULL, _IONBF, 0);
+#endif
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
