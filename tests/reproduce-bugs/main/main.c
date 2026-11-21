@@ -15,6 +15,17 @@
 #else
 #include "esp_spi_flash.h"
 #endif
+#ifdef OTA_REPRO_CONSOLE
+#include <string.h>
+#include "driver/uart.h"
+#include "esp_system.h"
+#include "linenoise/linenoise.h"
+#if ESP_IDF_VERSION_MAJOR >= 6
+#include "driver/uart_vfs.h"
+#else
+#include "esp_vfs_dev.h"
+#endif
+#endif
 
 static bool fail_allocation;
 static bool fail_boot_selection;
@@ -105,12 +116,7 @@ static void run_case(const char *name, const char *path, esp_err_t expected,
     fflush(stdout);
 }
 
-void app_main(void) {
-    ESP_ERROR_CHECK(nvs_flash_init());
-    ESP_ERROR_CHECK(esp_netif_init());
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-    ESP_ERROR_CHECK(example_connect());
-
+static void run_suite(void) {
     run_case("baseline", "image.bin", ESP_OK, 1, 200, 1000, false);
     fail_boot_selection = true;
     run_case("boot_error", "image.bin", ESP_ERR_FLASH_OP_FAIL, 1, 200, 1000, false);
@@ -123,7 +129,77 @@ void app_main(void) {
     run_case("stall_timeout", "stall", ESP_ERR_TIMEOUT, 1, 200, 500, true);
     printf("SUITE_DONE\n");
     fflush(stdout);
+}
+
+#ifdef OTA_REPRO_CONSOLE
+static void print_state(void) {
+    const esp_partition_t *running = esp_ota_get_running_partition();
+    const esp_partition_t *boot = esp_ota_get_boot_partition();
+    const esp_partition_t *next = esp_ota_get_next_update_partition(NULL);
+    printf("running=%s boot=%s next_update=%s free_heap_bytes=%lu\n",
+           running ? running->label : "none", boot ? boot->label : "none",
+           next ? next->label : "none", (unsigned long)esp_get_free_heap_size());
+}
+
+static void run_console(void) {
+    int uart = CONFIG_ESP_CONSOLE_UART_NUM;
+    ESP_ERROR_CHECK(uart_driver_install(uart, 256, 0, 0, NULL, 0));
+#if ESP_IDF_VERSION_MAJOR >= 6
+    uart_vfs_dev_port_set_rx_line_endings(uart, ESP_LINE_ENDINGS_CR);
+    uart_vfs_dev_use_driver(uart);
+#else
+    esp_vfs_dev_uart_port_set_rx_line_endings(uart, ESP_LINE_ENDINGS_CR);
+    esp_vfs_dev_uart_use_driver(uart);
+#endif
+
+    linenoiseSetDumbMode(1);
+    bool suite_done = false;
+    puts("Type help for commands.");
+    while (true) {
+        char *command = linenoise("esp32> ");
+        if (command == NULL) {
+            continue;
+        }
+        if (strcmp(command, "state") == 0) {
+            print_state();
+        } else if (strcmp(command, "clear") == 0) {
+            linenoiseClearScreen();
+        } else if (strcmp(command, "run") == 0) {
+            if (suite_done) {
+                puts("The suite already ran. Start a fresh QEMU session to run it again.");
+            } else {
+                run_suite();
+                suite_done = true;
+            }
+        } else if (strcmp(command, "help") == 0) {
+            puts("state  Show OTA partitions and free heap\n"
+                 "run    Run the OTA suite once\n"
+                 "clear  Clear the console screen");
+        } else if (*command) {
+            puts("Unknown command. Type help for commands.");
+        }
+        linenoiseFree(command);
+    }
+}
+#endif
+
+void app_main(void) {
+#ifdef OTA_REPRO_CONSOLE
+    // Let the UART line editor read and echo each key before Enter.
+    setvbuf(stdin, NULL, _IONBF, 0);
+    setvbuf(stdout, NULL, _IONBF, 0);
+#endif
+    ESP_ERROR_CHECK(nvs_flash_init());
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    ESP_ERROR_CHECK(example_connect());
+
+#ifdef OTA_REPRO_CONSOLE
+    run_console();
+#else
+    run_suite();
     while (true) {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
+#endif
 }

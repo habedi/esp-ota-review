@@ -2,6 +2,8 @@ TESTS := tests/reproduce-bugs
 BUILD := build/ota-qemu
 PYTHON := $(BUILD)/venv/bin/python
 QEMU := $(BUILD)/qemu/bin/qemu-system-xtensa
+BUILD_VARIANT = $(VARIANT)$(if $(filter 1,$(CONSOLE)),-console)
+RUN_ARGS = $(if $(filter 1,$(CONSOLE)),--shell,--log $(BUILD)/$(VARIANT)-qemu.log --csv $(BUILD)/$(VARIANT)-results.csv $(EXPECT))
 SLIDES := docs/presentation/zaptec-tech-case-pres.tex
 SLIDES_PDF := build/presentation/zaptec-tech-case-pres.pdf
 
@@ -9,6 +11,7 @@ SLIDES_PDF := build/presentation/zaptec-tech-case-pres.pdf
 .DELETE_ON_ERROR:
 .PHONY: help pres hooks setup setup-host setup-sdks setup-newest force-python-sync
 .PHONY: check-setup check-common check-review check-newest test test-buggy test-fixed test-newest clean distclean
+.PHONY: console-buggy console-fixed console-newest
 # Both QEMU runs need the same local HTTP port.
 .NOTPARALLEL:
 
@@ -24,6 +27,9 @@ help:
 		'make test-buggy   Run the tests for the buggy OTA component implementation' \
 		'make test-fixed   Run the tests for the locally fixed OTA component implementation' \
 		'make test-newest  Run the tests for the OTA component implementation from ESP-IDF v6.1.1' \
+		'make console-buggy   Open the QEMU console for the review SDK' \
+		'make console-fixed   Open the QEMU console for the locally fixed SDK' \
+		'make console-newest  Open the QEMU console for ESP-IDF v6.1.1' \
 		'make clean        Remove build outputs, logs, and CSV results (keeps installed tools)' \
 		'make distclean    Also remove the venv, compilers, and QEMU (need to run make setup again)' \
 		'' \
@@ -101,24 +107,23 @@ check-review: check-common
 check-newest: check-common
 	@( $(NEWEST_CHECK) ) >/dev/null || { echo 'ESP-IDF v6.1.1 tools need setup. Run make setup first.' >&2; exit 1; }
 
-test-buggy: VARIANT := original
+test-buggy console-buggy: VARIANT := original
 test-buggy: EXPECT := --expect-buggy
-test-fixed: VARIANT := fixed
+test-fixed console-fixed: VARIANT := fixed
 test-fixed: EXPECT :=
-test-newest: VARIANT := v6.1.1
+test-newest console-newest: VARIANT := v6.1.1
 test-newest: EXPECT := --expect-fail stall_timeout
+console-buggy console-fixed console-newest: private override CONSOLE := 1
 
-test-buggy test-fixed: check-review
-test-newest: check-newest
+test-buggy test-fixed console-buggy console-fixed: check-review
+test-newest console-newest: check-newest
 
-test-buggy test-fixed test-newest:
-	bash $(TESTS)/build.sh $(VARIANT)
-	$(PYTHON) $(TESTS)/test/run_qemu.py $(BUILD)/$(VARIANT) \
-		--qemu $(QEMU) --log $(BUILD)/$(VARIANT)-qemu.log \
-		--csv $(BUILD)/$(VARIANT)-results.csv $(EXPECT)
+test-buggy test-fixed test-newest console-buggy console-fixed console-newest:
+	bash $(TESTS)/build.sh $(BUILD_VARIANT)
+	$(PYTHON) $(TESTS)/test/run_qemu.py $(BUILD)/$(BUILD_VARIANT) --qemu $(QEMU) $(RUN_ARGS)
 
 clean:
-	rm -rf $(addprefix $(BUILD)/,original fixed v6.1.1) build/presentation
+	rm -rf $(addprefix $(BUILD)/,original fixed v6.1.1 original-console fixed-console v6.1.1-console) build/presentation
 	rm -f $(BUILD)/*-qemu.log $(BUILD)/*-results.csv
 
 distclean: clean

@@ -1,8 +1,8 @@
-## Zaptec's Review Case
+## Zaptec's Case (ESP-IDF OTA Reliability Review)
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/habedi/esp-ota-review/tests.yml?label=tests&style=flat&labelColor=282c34&logo=github&logoColor=white)](https://github.com/habedi/esp-ota-review/actions/workflows/tests.yml)
-[![Documentation](https://img.shields.io/badge/docs-latest-007ec6?style=flat&labelColor=282c34&logo=read-the-docs&logoColor=white)](docs)
-[![License](https://img.shields.io/badge/license-Apache--2.0-007ec6?style=flat&labelColor=282c34&logo=open-source-initiative&logoColor=white)](LICENSE)
+[![Documentation](https://img.shields.io/badge/docs-latest-507ec6?style=flat&labelColor=282c34&logo=read-the-docs&logoColor=white)](docs)
+[![License](https://img.shields.io/badge/license-Apache--2.0-507ec6?style=flat&labelColor=282c34&logo=open-source-initiative&logoColor=white)](LICENSE)
 
 Review
 the [esp_https_ota.c](https://github.com/espressif/esp-idf/blob/7ad199d14a5d0fd2f61193c0f8a51a5d2bfa2c00/components/esp_https_ota/src/esp_https_ota.c)
@@ -22,13 +22,13 @@ explanations.**
 
 ### Quickstart
 
-To follow the steps below, you need to have Git, GNU Make, and [Nix](https://nixos.org/download/) (with flakes enabled) installed on your machine.
+To follow the steps below, you need to have Git and [Nix](https://nixos.org/download/) (with flakes enabled) installed on your machine.
 
 #### 1. Clone the repository
 
 ```shell
-git clone --depth 1 https://github.com/idea-playground/esp-https-ota
-cd esp-https-ota
+git clone --depth 1 https://github.com/habedi/esp-ota-review.git
+cd esp-ota-review
 ```
 
 #### 2. Set up the development environment
@@ -36,14 +36,14 @@ cd esp-https-ota
 ```shell
 nix develop
 
-# Check the SDK revisions and install or repair the tools
+# Check the SDK revisions and install or repair the tools (this may take a while)
 make setup
 ```
 
 #### 3. Run the tests to show the bugs
 
 ```bash
-# This may take a while to run
+# This may take a while to run too
 make test
 ```
 
@@ -51,6 +51,22 @@ After the tests ran, the results will be stored in `build/ota-qemu/` as two CSV 
 
 > [!IMPORTANT]
 > This step needs an x86-64 Linux machine to run.
+
+##### Inspect the Emulated ESP32
+
+You can check the state of the emulated ESP32 (before and after running the OTA updates) by running any of commands below.
+
+```bash
+make console-fixed   # Locally fixed SDK
+make console-buggy   # Pinned review SDK
+make console-newest  # ESP-IDF v6.1.1
+```
+
+> [!TIP]
+> At the `esp32>` prompt, enter `state` to see the currently used partition (running), selected boot partition, next OTA target, and free heap memory.
+> Enter `run` to run the test suite (which performs OTA updates).
+> After seeing the `SUITE_DONE` message, enter `state` again to inspect the same guest state after the OTA updates ran.
+> Press `Ctrl+C` to exit and enter `help` to see the available commands.
 
 #### 4. Build the presentation
 
