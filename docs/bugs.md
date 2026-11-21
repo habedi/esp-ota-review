@@ -19,9 +19,15 @@ The information about the versions of the ESP-IDF SDK that are pinned as Git sub
 
 ### Upstream Proposal for Stalled Downloads
 
-[PR #19246](https://github.com/espressif/esp-idf/pull/19246) is an open proposal for Bug 4. It adds a no-progress timeout to the one-shot `esp_https_ota()` wrapper. Slow downloads can continue as long as bytes arrive. Applications that call `esp_https_ota_perform()` directly still need their own deadline. A total OTA deadline remains a separate control.
+[PR #19246](https://github.com/espressif/esp-idf/pull/19246) is an open proposal for Bug 4.
+It adds a no-progress timeout to the one-shot `esp_https_ota()` wrapper. Slow downloads can continue as long as bytes arrive.
+Applications that call `esp_https_ota_perform()` directly still need their own deadline.
+A total OTA deadline remains a separate thing to implement.
 
-The author reports testing HTTPS in ESP32-C3 QEMU with ESP-IDF v5.5.5. With the connection left open, the unpatched wrapper was still retrying after 35 minutes. The patched wrapper returned `ESP_ERR_TIMEOUT` after 11.1 seconds. Our recorded runs used single-core ESP32 QEMU, plain HTTP, and disabled Timer Group watchdogs. The unpatched runs ended when the test server closed the connection after about eight seconds. [Local QEMU results](qemu-results.md)
+The author reports testing HTTPS in ESP32-C3 QEMU with ESP-IDF v5.5.5.
+With the connection left open, the unpatched wrapper was still retrying after 35 minutes.
+The patched wrapper returned `ESP_ERR_TIMEOUT` after 11.1 seconds. Our recorded runs used single-core ESP32 QEMU, plain HTTP, and disabled Timer Group watchdogs.
+The unpatched runs ended when the test server closed the connection after about eight seconds. [Local QEMU results](qemu-results.md)
 
 ### Other Related Issues
 
