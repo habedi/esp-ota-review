@@ -54,7 +54,7 @@ After the tests ran, the results will be stored in `build/ota-qemu/` as two CSV 
 
 ##### Inspect the Emulated ESP32
 
-You can check the state of the emulated ESP32 (before and after running the tests/OTA updates) by running any of commands below.
+You can check the state of the emulated ESP32 (before and after running the OTA updates) by running any of commands below.
 
 ```bash
 make console-fixed   # Locally fixed SDK
@@ -63,10 +63,10 @@ make console-newest  # ESP-IDF v6.1.1
 ```
 
 > [!TIP]
-> At the `esp32>` prompt, type `state` to see the currently used partition, selected boot partition, next OTA target, and free heap memory.
-> Enter `run` to run the test suite.
+> At the `esp32>` prompt, enter `state` to see the currently used partition (running), selected boot partition, next OTA target, and free heap memory.
+> Enter `run` to run the test suite (which performs OTA updates).
 > After `SUITE_DONE` message, enter `state` again to inspect the same guest.
-> Press `Ctrl+C` to exit.
+> Press `Ctrl+C` to exit and enter `help` to see the available commands.
 
 #### 4. Build the presentation
 
