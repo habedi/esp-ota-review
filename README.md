@@ -68,6 +68,11 @@ make console-newest  # ESP-IDF v6.1.1
 > After seeing the `SUITE_DONE` message, enter `state` again to inspect the same guest state after the OTA updates ran.
 > Press `Ctrl+C` to exit and enter `help` to see the available commands.
 
+<div align="center">
+  <img alt="Console Buggy" src="docs/assets/images/console-buggy-1.png" width="100%">
+</div>
+
+
 #### 4. Build the presentation
 
 ```bash
