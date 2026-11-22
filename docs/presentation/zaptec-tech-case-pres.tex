@@ -187,7 +187,7 @@
         \endgroup
         \vspace{3mm}
 
-        {\footnotesize\color{Muted} The OTA process overview is on slide 2. Supplementary materials are on slide 16.}
+        {\footnotesize\color{Muted} The OTA overview is on slide 2, supplementary materials are on slide 16, and LLM use is on slide 17.}
     \end{frame}
 
 
@@ -680,6 +680,18 @@ return err == ESP_OK ? finish_err : err;
             \end{column}
         \end{columns}
         \note{Use this slide during questions and answers for commit hashes, issue numbers, or test commands.}
+    \end{frame}
+
+% Slide 17: LLM use
+    \begin{frame}{AI/LLM use}
+        \begin{itemize}
+            \item I use AI-assisted coding tools for finding possible bugs and implementing the various things like the tests and boilerplate.
+            \item I use an AI skill called ``Ponytail'' to make the changes and work AI does bounded and small, so I can see everything and make sure AI doesn't make a serious mistake.
+            \item I use AI to discuss different aspects of the code (given the code as context). Also, I use AI to search for relevant issues and posts that could help me with the task.
+            \item I try to not use AI for writing text because AI writes very badly.
+            \item AI is very competent, but it can't take responsibility for what it does. Additionally, I find that current AI models can overengineer and do more than I asked them to do.
+            \item I also use (opinionated) templates for my project, which I find help AI work closer to how I myself would've done things.
+        \end{itemize}
     \end{frame}
 
 \end{document}
