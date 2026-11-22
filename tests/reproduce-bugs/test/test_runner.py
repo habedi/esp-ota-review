@@ -63,17 +63,37 @@ class RunTests(unittest.TestCase):
         self.build = Path(stack.enter_context(TemporaryDirectory()))
         (self.build / "flasher_args.json").write_text('{"flash_files": {}}')
         (self.build / "ota_repro.bin").write_bytes(b"")
-        argv = ["run_qemu.py", str(self.build), "--qemu", "qemu", "--log", str(self.build / "q.log")]
+        self.log = self.build / "q.log"
+        self.csv = self.build / "results.csv"
+        argv = ["run_qemu.py", str(self.build), "--qemu", "qemu",
+                "--log", str(self.log), "--csv", str(self.csv)]
         stack.enter_context(patch("sys.argv", argv))
         stack.enter_context(patch("run_qemu.http.server.ThreadingHTTPServer"))
         self.popen = stack.enter_context(patch("run_qemu.subprocess.Popen"))
 
-    def test_guest_crash_reports_reason(self):
-        self.popen.return_value.stdout = iter(["Guru Meditation Error: Core 0 panic'ed\n"])
+    def test_guest_crash_keeps_backtrace_and_only_precrash_results(self):
+        self.popen.return_value.stdout = iter([
+            "CASE_RESULT baseline PASS\n",
+            "Guru Meditation Error: Core 0 panic'ed\n",
+            "Backtrace: example\n",
+            *(f"CASE_RESULT {name} PASS\n" for name in sorted(CASES)),
+            "SUITE_DONE\n",
+        ])
         out = io.StringIO()
         with redirect_stdout(out):
             self.assertEqual(main(), 1)
         self.assertIn("crashed", out.getvalue())
+        self.assertIn("Backtrace: example\n", self.log.read_text())
+        self.assertEqual(self.csv.read_text(), "case,result\nbaseline,PASS\n")
+
+    def test_guest_crash_stops_at_log_deadline(self):
+        panic = "Guru Meditation Error: Core 0 panic'ed\n"
+        self.popen.return_value.stdout = iter([panic, "Output after the deadline\n"])
+        out = io.StringIO()
+        with patch("run_qemu.PANIC_LOG_TIMEOUT_S", 0), redirect_stdout(out):
+            self.assertEqual(main(), 1)
+        self.assertIn("crashed", out.getvalue())
+        self.assertEqual(self.log.read_text(), panic)
 
     def test_early_exit_reports_reason(self):
         self.popen.return_value.stdout = iter([])

@@ -28,7 +28,10 @@ if not archive.is_file() or sha256(archive) != release['sha256']:
             raise ValueError('QEMU archive checksum mismatch')
         download.replace(archive)
 output = root / 'build/ota-qemu/qemu'
-shutil.rmtree(output, ignore_errors=True)
-output.mkdir(parents=True, exist_ok=True)
+try:
+    shutil.rmtree(output)
+except FileNotFoundError:
+    pass
+output.mkdir()
 subprocess.run(['tar', '-xf', str(archive), '-C', str(output), '--strip-components=1'], check=True)
 subprocess.run([str(output / 'bin/qemu-system-xtensa'), '--version'], check=True)

@@ -21,6 +21,7 @@ CASES = {
     "stall_timeout",
 }
 TIMEOUT_S = 150
+PANIC_LOG_TIMEOUT_S = 2
 
 
 def results_from(output):
@@ -137,7 +138,7 @@ def main():
             except KeyboardInterrupt:
                 return 130
         lines = []
-        stop_reason = f"no SUITE_DONE within {TIMEOUT_S} seconds"
+        stop_reason = None
         messages = queue.Queue()
         args.log.parent.mkdir(parents=True, exist_ok=True)
         log = args.log.open("w")
@@ -159,19 +160,22 @@ def main():
                 except queue.Empty:
                     continue
                 if line is None:
-                    stop_reason = "QEMU exited before SUITE_DONE"
+                    stop_reason = stop_reason or "QEMU exited before SUITE_DONE"
                     break
-                lines.append(line)
                 log.write(line)
                 log.flush()
+                if stop_reason is not None:
+                    continue
+                lines.append(line)
                 if line.startswith(("CASE_", "SUITE_DONE")):
                     print(line.rstrip(), flush=True)
                 if line.strip() == "SUITE_DONE":
-                    stop_reason = None
                     break
                 if "Guru Meditation Error" in line:
                     stop_reason = "the guest crashed (Guru Meditation Error)"
-                    break
+                    deadline = time.monotonic() + PANIC_LOG_TIMEOUT_S
+            else:
+                stop_reason = stop_reason or f"no SUITE_DONE within {TIMEOUT_S} seconds"
         finally:
             process.terminate()
             try:
