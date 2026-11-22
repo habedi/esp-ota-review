@@ -52,10 +52,12 @@ jobs:
         run: nix develop -c make pres
 
       - name: Upload test results and presentation
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: ota-review
           path: |
             build/ota-qemu/*-results.csv
+            build/ota-qemu/*-qemu.log
             build/presentation/zaptec-tech-case-pres.pdf
-          if-no-files-found: error
+          if-no-files-found: warn

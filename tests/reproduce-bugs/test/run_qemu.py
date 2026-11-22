@@ -20,6 +20,8 @@ CASES = {
     "http_500",
     "stall_timeout",
 }
+TIMEOUT_S = 150
+PANIC_LOG_TIMEOUT_S = 2
 
 
 def results_from(output):
@@ -136,6 +138,7 @@ def main():
             except KeyboardInterrupt:
                 return 130
         lines = []
+        stop_reason = None
         messages = queue.Queue()
         args.log.parent.mkdir(parents=True, exist_ok=True)
         log = args.log.open("w")
@@ -150,23 +153,29 @@ def main():
 
         threading.Thread(target=read_output, daemon=True).start()
         try:
-            deadline = time.monotonic() + 150
+            deadline = time.monotonic() + TIMEOUT_S
             while time.monotonic() < deadline:
                 try:
                     line = messages.get(timeout=min(1, max(0.01, deadline - time.monotonic())))
                 except queue.Empty:
                     continue
                 if line is None:
+                    stop_reason = stop_reason or "QEMU exited before SUITE_DONE"
                     break
-                lines.append(line)
                 log.write(line)
                 log.flush()
+                if stop_reason is not None:
+                    continue
+                lines.append(line)
                 if line.startswith(("CASE_", "SUITE_DONE")):
                     print(line.rstrip(), flush=True)
                 if line.strip() == "SUITE_DONE":
                     break
                 if "Guru Meditation Error" in line:
-                    break
+                    stop_reason = "the guest crashed (Guru Meditation Error)"
+                    deadline = time.monotonic() + PANIC_LOG_TIMEOUT_S
+            else:
+                stop_reason = stop_reason or f"no SUITE_DONE within {TIMEOUT_S} seconds"
         finally:
             process.terminate()
             try:
@@ -179,9 +188,17 @@ def main():
         server.server_close()
         if log is not None:
             log.close()
+    output = "".join(lines)
     if args.csv:
-        write_csv("".join(lines), args.csv)
-    results = results_from("".join(lines))
+        write_csv(output, args.csv)
+    try:
+        results = results_from(output)
+    except ValueError as error:
+        if stop_reason:
+            print(f"Suite failed: {stop_reason}. {error} See {args.log}.")
+        else:
+            print(f"Suite failed: {error} See {args.log}.")
+        return 1
     failed = {name for name, result in results.items() if result == "FAIL"}
     expected = expected_failures(args.expect_buggy, args.expect_fail)
     if failed != expected:

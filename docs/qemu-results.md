@@ -1,8 +1,8 @@
-# QEMU OTA Results
+## QEMU OTA Results
 
 All three runs used single-core ESP32 QEMU, HTTP over emulated Ethernet, and disabled QEMU Timer Group watchdogs.
 
-## Original
+### Original
 
 ```text
 CASE_RESULT baseline PASS actual=0 expected=0 flash_begin=1 expected_flash_begin=1 allocation_failures=0 boot_failures=0 http_status=200 read_timeouts=0
@@ -14,7 +14,7 @@ CASE_RESULT stall_timeout FAIL actual=-1 expected=263 flash_begin=1 expected_fla
 SUITE_DONE
 ```
 
-## Fixed
+### Fixed
 
 ```text
 CASE_RESULT baseline PASS actual=0 expected=0 flash_begin=1 expected_flash_begin=1 allocation_failures=0 boot_failures=0 http_status=200 read_timeouts=0
@@ -26,7 +26,7 @@ CASE_RESULT stall_timeout PASS actual=263 expected=263 flash_begin=1 expected_fl
 SUITE_DONE
 ```
 
-## v6.1.1
+### v6.1.1
 
 ```text
 CASE_RESULT baseline PASS actual=0 expected=0 flash_begin=1 expected_flash_begin=1 allocation_failures=0 boot_failures=0 http_status=200 read_timeouts=0

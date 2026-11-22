@@ -158,6 +158,7 @@ static void run_console(void) {
     while (true) {
         char *command = linenoise("esp32> ");
         if (command == NULL) {
+            vTaskDelay(pdMS_TO_TICKS(10));
             continue;
         }
         if (strcmp(command, "state") == 0) {
