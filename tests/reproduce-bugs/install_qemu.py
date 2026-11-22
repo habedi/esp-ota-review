@@ -1,6 +1,8 @@
 """Download and verify the pinned Linux x86-64 QEMU archive."""
+
 import hashlib
 import json
+import shutil
 import subprocess
 import urllib.request
 from pathlib import Path
@@ -26,6 +28,7 @@ if not archive.is_file() or sha256(archive) != release['sha256']:
             raise ValueError('QEMU archive checksum mismatch')
         download.replace(archive)
 output = root / 'build/ota-qemu/qemu'
+shutil.rmtree(output, ignore_errors=True)
 output.mkdir(parents=True, exist_ok=True)
 subprocess.run(['tar', '-xf', str(archive), '-C', str(output), '--strip-components=1'], check=True)
 subprocess.run([str(output / 'bin/qemu-system-xtensa'), '--version'], check=True)

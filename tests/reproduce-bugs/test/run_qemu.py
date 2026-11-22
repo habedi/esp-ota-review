@@ -20,6 +20,7 @@ CASES = {
     "http_500",
     "stall_timeout",
 }
+TIMEOUT_S = 150
 
 
 def results_from(output):
@@ -136,6 +137,7 @@ def main():
             except KeyboardInterrupt:
                 return 130
         lines = []
+        stop_reason = f"no SUITE_DONE within {TIMEOUT_S} seconds"
         messages = queue.Queue()
         args.log.parent.mkdir(parents=True, exist_ok=True)
         log = args.log.open("w")
@@ -150,13 +152,14 @@ def main():
 
         threading.Thread(target=read_output, daemon=True).start()
         try:
-            deadline = time.monotonic() + 150
+            deadline = time.monotonic() + TIMEOUT_S
             while time.monotonic() < deadline:
                 try:
                     line = messages.get(timeout=min(1, max(0.01, deadline - time.monotonic())))
                 except queue.Empty:
                     continue
                 if line is None:
+                    stop_reason = "QEMU exited before SUITE_DONE"
                     break
                 lines.append(line)
                 log.write(line)
@@ -164,8 +167,10 @@ def main():
                 if line.startswith(("CASE_", "SUITE_DONE")):
                     print(line.rstrip(), flush=True)
                 if line.strip() == "SUITE_DONE":
+                    stop_reason = None
                     break
                 if "Guru Meditation Error" in line:
+                    stop_reason = "the guest crashed (Guru Meditation Error)"
                     break
         finally:
             process.terminate()
@@ -179,9 +184,17 @@ def main():
         server.server_close()
         if log is not None:
             log.close()
+    output = "".join(lines)
     if args.csv:
-        write_csv("".join(lines), args.csv)
-    results = results_from("".join(lines))
+        write_csv(output, args.csv)
+    try:
+        results = results_from(output)
+    except ValueError as error:
+        if stop_reason:
+            print(f"Suite failed: {stop_reason}. {error} See {args.log}.")
+        else:
+            print(f"Suite failed: {error} See {args.log}.")
+        return 1
     failed = {name for name, result in results.items() if result == "FAIL"}
     expected = expected_failures(args.expect_buggy, args.expect_fail)
     if failed != expected:
