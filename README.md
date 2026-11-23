@@ -4,6 +4,8 @@
 [![Documentation](https://img.shields.io/badge/docs-latest-507ec6?style=flat&labelColor=282c34&logo=read-the-docs&logoColor=white)](docs)
 [![License](https://img.shields.io/badge/license-Apache--2.0-507ec6?style=flat&labelColor=282c34&logo=open-source-initiative&logoColor=white)](LICENSE)
 
+---
+
 Review
 the [esp_https_ota.c](https://github.com/espressif/esp-idf/blob/7ad199d14a5d0fd2f61193c0f8a51a5d2bfa2c00/components/esp_https_ota/src/esp_https_ota.c)
 and [simple_ota_example.c](https://github.com/espressif/esp-idf/blob/07bfc09d0c8837b4d149e1151c57635a0c02755a/examples/system/ota/simple_ota_example/main/simple_ota_example.c).
