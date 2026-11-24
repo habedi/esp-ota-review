@@ -125,6 +125,18 @@
 
 ### Additional Findings
 
+- Large firmware images: The pinned HTTPS OTA code streams the image through a reusable RAM buffer into the inactive app slot. It starts with
+  `OTA_SIZE_UNKNOWN` and erases the whole target slot. Rejecting an oversized image is expected, but detecting it after erase can leave the
+  inactive slot unusable. In v6.1.1, the default erases as it writes and can still fail late. Bulk erase with a known image length requests an
+  erase based on that length. The partition bounds check rejects an oversized erase before it modifies flash.
+  See the [HTTPS OTA erase mode](https://github.com/espressif/esp-idf/blob/v6.1.1/components/esp_https_ota/src/esp_https_ota.c#L794-L802),
+  [erase size calculation](https://github.com/espressif/esp-idf/blob/v6.1.1/components/app_update/esp_ota_ops.c#L209-L220), and
+  [partition bounds check](https://github.com/espressif/esp-idf/blob/v6.1.1/components/esp_partition/partition_target.c#L123-L143). Check the final firmware
+  file size against the smallest OTA slot used by the device fleet before release. HTML and images embedded in the app count toward that size.
+  Assets in a separate data partition need their own recovery plan if the update rewrites that partition. Test the largest supported image on
+  hardware, including a power cut during download and first-boot rollback. The QEMU runs used single-core ESP32, HTTP, and disabled Timer Group
+  watchdogs. See the [recorded results](qemu-results.md).
+
 - Cross-version SDK upgrade hazards: issues [#9987](https://github.com/espressif/esp-idf/issues/9987)
   and [#17595](https://github.com/espressif/esp-idf/issues/17595) (both closed). Deployed units running older firmware and bootloaders can fail when
   upgraded across major ESP-IDF versions, for example due to partition table MD5 validation enforcement (`#9987`) or older bootloader versus newer

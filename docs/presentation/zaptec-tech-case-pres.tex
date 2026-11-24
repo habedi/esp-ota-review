@@ -487,11 +487,11 @@ return err == ESP_OK ? finish_err : err;
             \end{column}
             \begin{column}{0.42\textwidth}
                 \accentcard{Blue}{BlueTint}{Check before erase}{%
-                    Call \code{esp\_https\_ota\_get\_img\_desc()} before any flash erase.%
+                    Check the image header and size. ESP-IDF v6.1.1 can still reject an oversized image after erase.%
                 }
                 \vspace{2mm}
                 \accentcard{Ink}{RowTint}{Time-limited loop}{%
-                    Run in one worker task and check the deadline between calls.%
+                    Use one worker and a deadline.%
                 }
                 \vspace{2mm}
                 \accentcard{Ink}{RowTint}{Safe reboot}{%
@@ -499,7 +499,7 @@ return err == ESP_OK ? finish_err : err;
                 }
             \end{column}
         \end{columns}
-        \note{Target time is 105 seconds. The sketch uses finish for cleanup on 7ad199d14a. Use abort on error when the SDK provides it. The application must also serialize OTA (issue 18127) and keep the OTA task stack in internal RAM (issue 10437).}
+        \note{Target time is 105 seconds. Rejecting an oversized image is expected. The robustness gap is the late rejection, which can leave the inactive slot unusable. The pinned SDK erases the whole slot up front. ESP-IDF v6.1.1 erases as it writes by default and can still fail late. With bulk erase and a known image length, v6.1.1 rejects an oversized erase before modifying flash. Check the release image size against the target slot before starting OTA. The sketch uses finish for cleanup on 7ad199d14a. Use abort on error when the SDK provides it. The application must also serialize OTA (issue 18127) and keep the OTA task stack in internal RAM (issue 10437).}
     \end{frame}
 
 % Slide 11: Staged API limitations
