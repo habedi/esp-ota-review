@@ -44,7 +44,8 @@
   `esp_http_check_response()`
   ([esp_http_client.c](https://github.com/espressif/esp-idf/blob/v6.1.1/components/esp_http_client/esp_http_client.c#L1199-L1233)). A cyclical
   redirect can keep `_http_connect()` looping.
-- **Certificate bundle and global certificate authority store blocked**: issue [#5504](https://github.com/espressif/esp-idf/issues/5504) (closed), fixed
+- **Certificate bundle and global certificate authority store blocked**: issue [#5504](https://github.com/espressif/esp-idf/issues/5504) (closed),
+  fixed
   in commit [48987ad9](https://github.com/espressif/esp-idf/commit/48987ad9). Because `v4.2.1` requires `cert_pem`
   at [esp_https_ota.c](https://github.com/espressif/esp-idf/blob/7ad199d14a5d0fd2f61193c0f8a51a5d2bfa2c00/components/esp_https_ota/src/esp_https_ota.c#L148),
   configurations using `use_global_ca_store` or `crt_bundle_attach` fail unless a dummy certificate is supplied. This makes certificate rotation
@@ -87,7 +88,8 @@
   `esp_ota_ops.c`](https://github.com/espressif/esp-idf/blob/7ad199d14a5d0fd2f61193c0f8a51a5d2bfa2c00/components/app_update/esp_ota_ops.c#L701-L712)
   and [v6.1.1 `esp_ota_ops.c`](https://github.com/espressif/esp-idf/blob/v6.1.1/components/app_update/esp_ota_ops.c#L1187-L1199)). After one failed
   `otadata` write, a retry can return `ESP_OK` while the running application remains unconfirmed and rolls back on reboot.
-- **Partition state lost after two updates without a reboot**: issue [#14688](https://github.com/espressif/esp-idf/issues/14688) (closed). In `v4.2.1`,
+- **Partition state lost after two updates without a reboot**: issue [#14688](https://github.com/espressif/esp-idf/issues/14688) (closed). In
+  `v4.2.1`,
   `esp_rewrite_ota_data()`
   ([esp_ota_ops.c](https://github.com/espressif/esp-idf/blob/7ad199d14a5d0fd2f61193c0f8a51a5d2bfa2c00/components/app_update/esp_ota_ops.c#L402-L411))
   alternates between the two `otadata` sectors on every `esp_ota_set_boot_partition()` call. That overwrites both sectors if two updates complete
@@ -99,7 +101,8 @@
   and [#14450](https://github.com/espressif/esp-idf/issues/14450) (both open). Flash operations disable flash cache and pause the other core, which
   can trigger interrupt or task watchdogs under real-time peripheral or wireless load. Because QEMU runs single-core with Timer Group watchdogs
   disabled, watchdog behavior during flash erases and writes must be tested on physical hardware.
-- **External SPI RAM task stack crashes**: issue [#10437](https://github.com/espressif/esp-idf/issues/10437) (closed). Calling `esp_https_ota()` from a
+- **External SPI RAM task stack crashes**: issue [#10437](https://github.com/espressif/esp-idf/issues/10437) (closed). Calling `esp_https_ota()` from
+  a
   task whose stack is in external SPI RAM crashes inside `spi_flash_disable_interrupts_caches_and_other_cpu()` during flash operations. Keep OTA task
   stacks in internal RAM.
 - **Flash memory mapping failure during image verification**: issue [#16968](https://github.com/espressif/esp-idf/issues/16968) (open). During
@@ -131,7 +134,8 @@
   erase based on that length. The partition bounds check rejects an oversized erase before it modifies flash.
   See the [HTTPS OTA erase mode](https://github.com/espressif/esp-idf/blob/v6.1.1/components/esp_https_ota/src/esp_https_ota.c#L794-L802),
   [erase size calculation](https://github.com/espressif/esp-idf/blob/v6.1.1/components/app_update/esp_ota_ops.c#L209-L220), and
-  [partition bounds check](https://github.com/espressif/esp-idf/blob/v6.1.1/components/esp_partition/partition_target.c#L123-L143). Check the final firmware
+  [partition bounds check](https://github.com/espressif/esp-idf/blob/v6.1.1/components/esp_partition/partition_target.c#L123-L143). Check the final
+  firmware
   file size against the smallest OTA slot used by the device fleet before release. HTML and images embedded in the app count toward that size.
   Assets in a separate data partition need their own recovery plan if the update rewrites that partition. Test the largest supported image on
   hardware, including a power cut during download and first-boot rollback. The QEMU runs used single-core ESP32, HTTP, and disabled Timer Group
