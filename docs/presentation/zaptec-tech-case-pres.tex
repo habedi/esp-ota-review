@@ -457,7 +457,7 @@ if (ret == ESP_OK) {
                 }
                 \vspace{2.5mm}
                 \accentcard{Violet}{VioletTint}{Can the wrapper be safe enough?}{%
-                    No. The one-shot wrapper hides boot and setup errors, skips checks before flash erase, and has no overall time limit.%
+                    No. Not as things are right now. The wrapper function hides boot and setup errors, skips checks before flash erase, and has no overall time limit.%
                 }
             \end{column}
         \end{columns}
@@ -479,18 +479,19 @@ if (err == ESP_OK) do {
     err = timed_out() ? ESP_ERR_TIMEOUT
         : esp_https_ota_perform(handle);
 } while (err == ESP_ERR_HTTPS_OTA_IN_PROGRESS);
-// Use abort() on error if the SDK provides it.
+// This ESP-IDF revision uses finish() for cleanup.
+// ESP-IDF v6.1.1 has an esp_https_ota_abort(handle).
 esp_err_t finish_err = esp_https_ota_finish(handle);
 return err == ESP_OK ? finish_err : err;
                 \end{lstlisting}
             \end{column}
             \begin{column}{0.42\textwidth}
                 \accentcard{Blue}{BlueTint}{Check before erase}{%
-                    Call \code{esp\_https\_ota\_get\_img\_desc()} before any flash erase.%
+                    Check the image header and size. ESP-IDF v6.1.1 can still reject an oversized image after erase.%
                 }
                 \vspace{2mm}
                 \accentcard{Ink}{RowTint}{Time-limited loop}{%
-                    Run in one worker task and check the deadline between calls.%
+                    Use one worker and a deadline.%
                 }
                 \vspace{2mm}
                 \accentcard{Ink}{RowTint}{Safe reboot}{%
@@ -498,7 +499,7 @@ return err == ESP_OK ? finish_err : err;
                 }
             \end{column}
         \end{columns}
-        \note{Target time is 105 seconds. The sketch uses finish for cleanup on 7ad199d14a. Use abort on error when the SDK provides it. The application must also serialize OTA (issue 18127) and keep the OTA task stack in internal RAM (issue 10437).}
+        \note{Target time is 105 seconds. Rejecting an oversized image is expected. The robustness gap is the late rejection, which can leave the inactive slot unusable. The pinned SDK erases the whole slot up front. ESP-IDF v6.1.1 erases as it writes by default and can still fail late. With bulk erase and a known image length, v6.1.1 rejects an oversized erase before modifying flash. Check the release image size against the target slot before starting OTA. The sketch uses finish for cleanup on 7ad199d14a. Use abort on error when the SDK provides it. The application must also serialize OTA (issue 18127) and keep the OTA task stack in internal RAM (issue 10437).}
     \end{frame}
 
 % Slide 11: Staged API limitations
@@ -555,7 +556,7 @@ return err == ESP_OK ? finish_err : err;
         \endgroup
         \vspace{2.5mm}
         \accentcard{Blue}{BlueTint}{Before testing}{%
-            Use production TLS, watchdog, and bootloader settings; test real heap load (\extlink{https://github.com/espressif/esp-idf/issues/16968}{\#16968}) and older field builds (\extlink{https://github.com/espressif/esp-idf/issues/9987}{\#9987}, \extlink{https://github.com/espressif/esp-idf/issues/17595}{\#17595}).%
+            Use production TLS, watchdog, and bootloader settings; test real heap load (\extlink{https://github.com/espressif/esp-idf/issues/16968}{\#16968}) and older (deployed) builds (\extlink{https://github.com/espressif/esp-idf/issues/9987}{\#9987}, \extlink{https://github.com/espressif/esp-idf/issues/17595}{\#17595}).%
         }
         \note{Target time is 105 seconds. Describe a hardware bench with network faults, power cuts, and charging checks. Include dual-core flash watchdog checks (issues 10890 and 14450), realistic firmware sizes under heap and MMU load (issue 16968), and upgrades from older field firmware (issues 9987 and 17595). Agree on update time limits, charging pause rules, and recovery goals before testing. QEMU disables watchdogs and runs one core over HTTP.}
     \end{frame}
@@ -663,8 +664,8 @@ return err == ESP_OK ? finish_err : err;
                 \accentcard{Ink}{RowTint}{Code and upstream links}{%
                     \begin{itemize}
                                 \setlength{\itemsep}{2pt}\setlength{\topsep}{2pt}\setlength{\parsep}{0pt}
-                            \item \pinnedcode{}{OTA source (assigned for review) at \code{7ad199d14a}}
-                            \item \examplecode{}{Caller example (assigned for review) at \code{07bfc09d0c}}
+                            \item \pinnedcode{}{OTA source (given for review) at \code{7ad199d14a}}
+                            \item \examplecode{}{Caller example (given for review) at \code{07bfc09d0c}}
                             \item \extlink{https://github.com/espressif/esp-idf/issues/12635}{Boot-selection issue \#12635}
                             \item \extlink{https://github.com/espressif/esp-idf/issues/7058}{HTTP status issues \#7058} and \extlink{https://github.com/espressif/esp-idf/issues/8195}{\#8195}
                             \item \extlink{https://github.com/espressif/esp-idf/issues/6364}{Time limit issue \#6364}
