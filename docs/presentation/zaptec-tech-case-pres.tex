@@ -372,21 +372,21 @@ if (data_read == 0) {
     \rowcolor{Ink!10}
     \textbf{Case}                      & \textbf{Assigned SDK}                             & \textbf{Local fixes} & \textbf{v6.1.1}             \\
     \midrule
-    Good download and image check      & \passpill{Pass} (\code{0})                        & \passpill{Pass}      & \passpill{Pass}             \\
+    Good download and image check      & \passpill{Pass}                        & \passpill{Pass}      & \passpill{Pass}             \\
     \rowcolor{RowTint}
-    Boot selection fails (injected)    & \failpill{Fail} (\code{0}, expected \code{24577}) & \passpill{Pass} & \passpill{Pass} \\
-    Memory allocation fails (injected) & \failpill{Fail} (\code{-1}, expected \code{257}) & \passpill{Pass} & \passpill{Pass} \\
+    Boot selection fails (injected)    & \failpill{Fail} & \passpill{Pass} & \passpill{Pass} \\
+    Memory allocation fails (injected) & \failpill{Fail} & \passpill{Pass} & \passpill{Pass} \\
     \rowcolor{RowTint}
-    HTTP 404 response                  & \failpill{Fail} (\code{5379}, \code{begin=1})     & \passpill{Pass} & \passpill{Pass} \\
-    HTTP 500 response                  & \failpill{Fail} (\code{5379}, \code{begin=1})     & \passpill{Pass} & \passpill{Pass} \\
+    HTTP 404 response                  & \failpill{Fail} & \passpill{Pass} & \passpill{Pass} \\
+    HTTP 500 response                  & \failpill{Fail} & \passpill{Pass} & \passpill{Pass} \\
     \rowcolor{RowTint}
-    Stalled download (no deadline)     & \failpill{Fail} (\code{-1}, expected \code{263})  & \passpill{Pass} & \failpill{Fail} (\code{-1}) \\
+    Stalled download (no deadline)     & \failpill{Fail} & \passpill{Pass} & \failpill{Fail} \\
     \bottomrule
         \end{tabularx}
         \endgroup
         \par\vspace{3mm}
         \accentcard{Ink}{RowTint}{Test limits}{%
-            Single-core ESP32 QEMU over HTTP with Timer Group watchdogs disabled. \code{begin=1} means one call to \code{esp\_ota\_begin()}.%
+            Single-core ESP32 QEMU over HTTP with Timer Group watchdogs disabled.
         }
         \note{Target time is 90 seconds. A language model flagged paths, which I checked against the pinned SDK and QEMU results. The baseline stops after boot-slot selection. The two unpatched builds retry the stalled download until the server closes the connection.}
     \end{frame}
