@@ -167,31 +167,9 @@
 
 \begin{document}
 
-% Slide 1: Table of contents
-    \begin{frame}{The Technical Case (Table of Contents)}
-        \begingroup
-        \renewcommand{\arraystretch}{1.45}
-        \small
-        \begin{tabularx}{\textwidth}{@{}l >{\raggedright\arraybackslash}X r@{}}
-            \toprule
-            & \textbf{Questions (from the main README)} & \textbf{Slides} \\
-            \midrule
-            Q1 & Are there bugs in the OTA implementation? & \hyperlink{ota-bugs}{\textcolor{Blue}{3--8}} \\
-            Q2 & What can go wrong when calling the \code{esp\_https\_ota} wrapper as it's implemented now? & \hyperlink{ota-bugs}{\textcolor{Blue}{3--6}}, \hyperlink{ota-example}{\textcolor{Blue}{9}} \\
-            Q3 & How should we use \code{esp\_https\_ota} to ensure sufficient robustness? Is it even possible? & \hyperlink{ota-example}{\textcolor{Blue}{9--11}} \\
-            Q4 & How would we make sure that OTA in the product is robust enough? & \hyperlink{ota-hardware}{\textcolor{Blue}{12--15}} \\
-            \bottomrule
-        \end{tabularx}
-        \endgroup
-        \vspace{3mm}
-
-        {\footnotesize\color{Muted} The OTA overview is on slide 2, supplementary materials are on slide 16, and LLM use is on slide 17.}
-    \end{frame}
-
-
     \section{What can go wrong?}
 
-% Slide 2: Overview flow
+% Slide 1: Overview flow
     \begin{frame}{The OTA update stages (Preamble)}
         \begin{center}
             \begin{tikzpicture}[node distance=5mm]
@@ -212,21 +190,9 @@
                     {Charger firmware};
             \end{tikzpicture}
         \end{center}
-        \vspace{3mm}
-        \noindent
-        \begin{minipage}[t]{0.485\textwidth}
-            \accentcard{Blue}{BlueTint}{What the OTA component does}{%
-                The wrapper function (\pinnedcode{\#L381}{\code{esp\_https\_ota()}}) downloads the image, checks it, and selects the next boot slot.%
-            }
-        \end{minipage}\hfill
-        \begin{minipage}[t]{0.485\textwidth}
-            \accentcard{Ink}{RowTint}{What the charger does}{%
-                In the example \examplecode{\#L106-L114}{\code{simple\_ota\_example.c}}, a reboot happens as soon as \code{ESP\_OK} is returned. The charger then must decide if the reboot is safe and run first-boot checks.%
-            }
-        \end{minipage}
     \end{frame}
 
-% Slide 3: Bug 1
+% Slide 2: Bug 1
     \begin{frame}[fragile,label=ota-bugs]{Boot selection can fail, but \code{ESP\_OK} is returned (Bug\#1)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.53\textwidth}
@@ -256,7 +222,7 @@ return err;
         \end{columns}
     \end{frame}
 
-% Slide 4: Bug 2
+% Slide 3: Bug 2
     \begin{frame}[fragile]{Setup loses the exact error (Bug\#2)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.55\textwidth}
@@ -283,7 +249,7 @@ if (https_ota_handle == NULL) {
         \end{columns}
     \end{frame}
 
-% Slide 5: Bug 3
+% Slide 4: Bug 3
     \begin{frame}[fragile]{HTTP errors can start a flash update (Bug\#3)}
         \begin{center}
             \begin{tikzpicture}[node distance=5mm]
@@ -318,7 +284,7 @@ if (process_again(status_code)) {
         \end{columns}
     \end{frame}
 
-% Slide 6: Bug 4
+% Slide 5: Bug 4
     \begin{frame}[fragile]{The wrapper has no overall time limit (Bug\#4)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.54\textwidth}
@@ -353,7 +319,7 @@ if (data_read == 0) {
         \end{columns}
     \end{frame}
 
-% Slide 7: QEMU results
+% Slide 6: QEMU results
     \begin{frame}{One baseline and five tests (to reproduce the bugs)}
         \begingroup
         \setlength{\aboverulesep}{0pt}
@@ -379,7 +345,7 @@ if (data_read == 0) {
         \endgroup
     \end{frame}
 
-% Slide 8: Bug summary table
+% Slide 7: Bug summary table
     \begin{frame}{Bugs, fixes, and upstream reports}
         \begingroup
         \setlength{\aboverulesep}{0pt}
@@ -421,7 +387,7 @@ if (data_read == 0) {
 
     \section{How should the application call it?}
 
-% Slide 9: Example analysis
+% Slide 8: Example analysis
     \begin{frame}[fragile,label=ota-example]{Why the code in \code{simple\_ota\_example.c} is not reliable enough?}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.52\textwidth}
@@ -450,7 +416,7 @@ if (ret == ESP_OK) {
         \end{columns}
     \end{frame}
 
-% Slide 10: Staged API sketch
+% Slide 9: Staged API sketch
     \begin{frame}[fragile]{Step-by-step calls give more control}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.55\textwidth}
@@ -487,7 +453,7 @@ return err == ESP_OK ? finish_err : err;
         \end{columns}
     \end{frame}
 
-% Slide 11: Staged API limitations
+% Slide 10: Staged API limitations
     \begin{frame}{The caller still needs a fixed SDK}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.50\textwidth}
@@ -513,7 +479,7 @@ return err == ESP_OK ? finish_err : err;
 
     \section{How do we test charger OTA?}
 
-% Slide 12: Hardware verification matrix
+% Slide 11: Hardware verification matrix
     \begin{frame}[label=ota-hardware]{Test recovery on real hardware}
         \begingroup
         \setlength{\aboverulesep}{0pt}
@@ -544,7 +510,7 @@ return err == ESP_OK ? finish_err : err;
         }
     \end{frame}
 
-% Slide 13: Rollback flow
+% Slide 12: Rollback flow
     \begin{frame}{A failed first boot must roll back}
         \begin{center}
             \begin{tikzpicture}[node distance=9mm]
@@ -581,7 +547,7 @@ return err == ESP_OK ? finish_err : err;
         \end{minipage}
     \end{frame}
 
-% Slide 14: Rollout policy
+% Slide 13: Rollout policy
     \begin{frame}{Use a canary/gradual deployment before a full rollout}
         \begin{center}
             \begin{tikzpicture}[node distance=18mm]
@@ -613,7 +579,7 @@ return err == ESP_OK ? finish_err : err;
         \end{minipage}
     \end{frame}
 
-% Slide 15: How I would ship OTA
+% Slide 14: How I would ship OTA
     \begin{frame}{How I would ship OTA}
         \vspace{1mm}
         \noindent
@@ -637,7 +603,7 @@ return err == ESP_OK ? finish_err : err;
 
     \section{Supplementary materials}
 
-% Slide 16: Source and reproduction
+% Slide 15: Source and reproduction
     \begin{frame}{Supplementary materials (source code and test instructions)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.50\textwidth}
@@ -662,7 +628,7 @@ return err == ESP_OK ? finish_err : err;
         \end{columns}
     \end{frame}
 
-% Slide 17: LLM use
+% Slide 16: LLM use
     \begin{frame}{AI/LLM use}
         \begin{itemize}
             \item I use AI to find (possible) bugs and implement things like tests, boilerplating, and prototyping.
