@@ -53,8 +53,6 @@
     \end{beamercolorbox}%
 }
 
-\setbeameroption{hide notes}
-
 % Code listings style
 \lstset{
     language=C,
@@ -226,7 +224,6 @@
                 In the example \examplecode{\#L106-L114}{\code{simple\_ota\_example.c}}, a reboot happens as soon as \code{ESP\_OK} is returned. The charger then must decide if the reboot is safe and run first-boot checks.%
             }
         \end{minipage}
-        \note{Target time is 60 seconds. Show what the API covers and what the product owns. The example restarts right away when the wrapper returns success. Safe charging pauses and saved data safety belong to the charger firmware.}
     \end{frame}
 
 % Slide 3: Bug 1
@@ -257,7 +254,6 @@ return err;
                 }
             \end{column}
         \end{columns}
-        \note{Target time is 2 minutes. Point out the outer and inner err variables in esp\_https\_ota\_finish. The fix writes to the outer variable. Notice esp\_ota\_set\_boot\_partition validates the image a second time, so a bootloader\_mmap failure under memory or MMU pressure (issue 16968) can trigger this bug in practice. The injected test shows false success. Physical flash failure and next-boot behavior on real hardware are still untested. Upstream issue 12635 reports the same bug.}
     \end{frame}
 
 % Slide 4: Bug 2
@@ -285,7 +281,6 @@ if (https_ota_handle == NULL) {
                 }
             \end{column}
         \end{columns}
-        \note{Target time is 75 seconds. Look at esp\_https\_ota right after begin fails. Returning the exact error helps the caller pick a smart retry rule. The test forces calloc inside the component to fail.}
     \end{frame}
 
 % Slide 5: Bug 3
@@ -321,7 +316,6 @@ if (process_again(status_code)) {
                 }
             \end{column}
         \end{columns}
-        \note{Target time is 105 seconds. Show \_http\_handle\_response\_code and the first branch of esp\_https\_ota\_perform. Note that esp\_ota\_begin with OTA\_SIZE\_UNKNOWN erases the passive slot before checking the HTTP body. Also note that \_http\_connect retries HTTP 401 with no limit and does not enforce redirect limits in either 7ad199d14a or v6.1.1. Checking only the final error would hide the flash erase.}
     \end{frame}
 
 % Slide 6: Bug 4
@@ -357,7 +351,6 @@ if (data_read == 0) {
                 }
             \end{column}
         \end{columns}
-        \note{Target time is 75 seconds. Walk through esp\_https\_ota\_perform at lines 285 to 306 and the while loop in esp\_https\_ota at lines 398 to 403. In QEMU, a stalled 200 stream triggers 14 read timeouts on 7ad199d14a and 15 on v6.1.1 until the test server closes after 8 seconds. The local fix stops with ESP\_ERR\_TIMEOUT (263) after 4 timeouts.}
     \end{frame}
 
 % Slide 7: QEMU results
@@ -384,11 +377,6 @@ if (data_read == 0) {
     \bottomrule
         \end{tabularx}
         \endgroup
-        \par\vspace{3mm}
-        \accentcard{Ink}{RowTint}{Test limits}{%
-            Single-core ESP32 QEMU over HTTP with Timer Group watchdogs disabled.
-        }
-        \note{Target time is 90 seconds. A language model flagged paths, which I checked against the pinned SDK and QEMU results. The baseline stops after boot-slot selection. The two unpatched builds retry the stalled download until the server closes the connection.}
     \end{frame}
 
 % Slide 8: Bug summary table
@@ -428,7 +416,6 @@ if (data_read == 0) {
     \bottomrule
         \end{tabularx}
         \endgroup
-        \note{Target time is 45 seconds. The fix source column points to code. Slide 7 shows which builds ran in QEMU.}
     \end{frame}
 
 
@@ -461,7 +448,6 @@ if (ret == ESP_OK) {
                 }
             \end{column}
         \end{columns}
-        \note{Target time is 75 seconds. Answer questions 2 and 3 from the brief. The example restarts on reported success without checking whether the charger is active.}
     \end{frame}
 
 % Slide 10: Staged API sketch
@@ -499,7 +485,6 @@ return err == ESP_OK ? finish_err : err;
                 }
             \end{column}
         \end{columns}
-        \note{Target time is 105 seconds. Rejecting an oversized image is expected. The robustness gap is the late rejection, which can leave the inactive slot unusable. The pinned SDK erases the whole slot up front. ESP-IDF v6.1.1 erases as it writes by default and can still fail late. With bulk erase and a known image length, v6.1.1 rejects an oversized erase before modifying flash. Check the release image size against the target slot before starting OTA. The sketch uses finish for cleanup on 7ad199d14a. Use abort on error when the SDK provides it. The application must also serialize OTA (issue 18127) and keep the OTA task stack in internal RAM (issue 10437).}
     \end{frame}
 
 % Slide 11: Staged API limitations
@@ -523,7 +508,6 @@ return err == ESP_OK ? finish_err : err;
                 }
             \end{column}
         \end{columns}
-        \note{Target time is 90 seconds. One worker task keeps the charger responsive during downloads. Beyond the four core bugs, 7ad199d14a allows HTTPS downgrades (commit eef3b0bf) and blocks certificate bundles (issue 5504). Newer SDKs such as v6.1.1 still have unguarded redirect loops in \_http\_connect and open esp\_ota\_ops bugs (issues 19413 and 19439).}
     \end{frame}
 
 
@@ -558,7 +542,6 @@ return err == ESP_OK ? finish_err : err;
         \accentcard{Blue}{BlueTint}{Before testing}{%
             Use production TLS, watchdog, and bootloader settings; test real heap load (\extlink{https://github.com/espressif/esp-idf/issues/16968}{\#16968}) and older (deployed) builds (\extlink{https://github.com/espressif/esp-idf/issues/9987}{\#9987}, \extlink{https://github.com/espressif/esp-idf/issues/17595}{\#17595}).%
         }
-        \note{Target time is 105 seconds. Describe a hardware bench with network faults, power cuts, and charging checks. Include dual-core flash watchdog checks (issues 10890 and 14450), realistic firmware sizes under heap and MMU load (issue 16968), and upgrades from older field firmware (issues 9987 and 17595). Agree on update time limits, charging pause rules, and recovery goals before testing. QEMU disables watchdogs and runs one core over HTTP.}
     \end{frame}
 
 % Slide 13: Rollback flow
@@ -596,7 +579,6 @@ return err == ESP_OK ? finish_err : err;
                 A reset before confirmation rolls back if a previous image can boot.%
             }
         \end{minipage}
-        \note{Target time is 75 seconds. A healthy image calls esp\_ota\_mark\_app\_valid\_cancel\_rollback. A failed test requests rollback. Watch for open issue 19413, where a retry after a failed otadata write can return ESP\_OK without confirming the running firmware. A reset before confirmation also rolls back when a good old image exists. Test this on real hardware.}
     \end{frame}
 
 % Slide 14: Rollout policy
@@ -629,7 +611,6 @@ return err == ESP_OK ? finish_err : err;
                 Pause the rollout right away if the small group crosses any limit.%
             }
         \end{minipage}
-        \note{Target time is 45 seconds. Agree on pause limits with product and operations teams. Always read the firmware version from the charger after it reboots.}
     \end{frame}
 
 % Slide 15: How I would ship OTA
@@ -651,7 +632,6 @@ return err == ESP_OK ? finish_err : err;
                 Test safe charging, first-boot checks, and remote recovery on real hardware.%
             }
         \end{minipage}
-        \note{Target time is 90 seconds. Tie each point back to the four questions in the brief. Note that upgrading ESP-IDF fixes older bugs, yet newer releases still add regressions such as issues 13065 and 19439, so automated fault tests remain necessary. Invite questions on time limits, rollback checks, and fault tests.}
     \end{frame}
 
 
@@ -680,7 +660,6 @@ return err == ESP_OK ? finish_err : err;
                 }
             \end{column}
         \end{columns}
-        \note{Use this slide during questions and answers for commit hashes, issue numbers, or test commands.}
     \end{frame}
 
 % Slide 17: LLM use
