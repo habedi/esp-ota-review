@@ -210,10 +210,6 @@ return err;
                 \end{lstlisting}
             \end{column}
             \begin{column}{0.44\textwidth}
-                \accentcard{Violet}{VioletTint}{Injected boot failure}{%
-                    Boot selection returned \code{ESP\_ERR\_FLASH\_OP\_FAIL} (\code{24577}). The OTA call returned \code{ESP\_OK} (\code{0}).%
-                }
-                \vspace{2mm}
                 \accentcard{Ink}{RowTint}{Why this happens}{%
                     An inner \code{err} variable shadows the outer error variable at \pinnedcode{\#L360}{line 360}. The function logs the error and returns \code{ESP\_OK}.\par
                     Issue \extlink{https://github.com/espressif/esp-idf/issues/12635}{\#12635} reports this bug. The \extlink{https://github.com/espressif/esp-idf/commit/d778b07b2213370e1603d1aadf7b60393b3f7569}{v5.1.3} fix updates the outer variable.%
@@ -237,10 +233,6 @@ if (https_ota_handle == NULL) {
                 \end{lstlisting}
             \end{column}
             \begin{column}{0.42\textwidth}
-                \accentcard{Violet}{VioletTint}{Injected memory failure}{%
-                    The test expected \code{ESP\_ERR\_NO\_MEM} (\code{257}). The wrapper function returned \code{ESP\_FAIL} (\code{-1}).%
-                }
-                \vspace{2.5mm}
                 \accentcard{Ink}{RowTint}{Why this matters}{%
                     The header \pinnedhdr{\#L53-L60}{\code{esp\_https\_ota.h}} (lines 53 to 60) documents specific error codes.\par
                     The wrapper gives the retry logic a generic failure code when setup fails.%
@@ -310,10 +302,6 @@ if (data_read == 0) {
                 \accentcard{Violet}{VioletTint}{Loop with no limit}{%
                     A read timeout leaves \code{errno} at zero in \code{7ad199d14a} and returns \code{-ESP\_ERR\_HTTP\_EAGAIN} in \code{v6.1.1}.\par
                     \pinnedcode{\#L398-L403}{\code{esp\_https\_ota()}} loops in \code{while (1)} with no deadline.%
-                }
-                \vspace{2.5mm}
-                \accentcard{Ink}{RowTint}{QEMU stall test}{%
-                    Both unpatched builds retry until the server closes the connection. The local no-progress guard returns \code{ESP\_ERR\_TIMEOUT} (\code{263}).%
                 }
             \end{column}
         \end{columns}
@@ -504,10 +492,6 @@ return err == ESP_OK ? finish_err : err;
     \bottomrule
         \end{tabularx}
         \endgroup
-        \vspace{2.5mm}
-        \accentcard{Blue}{BlueTint}{Before testing}{%
-            Use production TLS, watchdog, and bootloader settings; test real heap load (\extlink{https://github.com/espressif/esp-idf/issues/16968}{\#16968}) and older (deployed) builds (\extlink{https://github.com/espressif/esp-idf/issues/9987}{\#9987}, \extlink{https://github.com/espressif/esp-idf/issues/17595}{\#17595}).%
-        }
     \end{frame}
 
 % Slide 12: Rollback flow
@@ -558,25 +542,6 @@ return err == ESP_OK ? finish_err : err;
                 \draw[transition] (s2) -- node[above,font=\scriptsize,color=Ink] {Healthy} (s3);
             \end{tikzpicture}
         \end{center}
-        \vspace{3mm}
-        \noindent
-        \begin{minipage}[t]{0.485\textwidth}
-            \accentcard{Blue}{BlueTint}{What to keep an eye on}{%
-                \begin{itemize}
-                            \setlength{\itemsep}{1pt}\setlength{\topsep}{2pt}\setlength{\parsep}{0pt}
-                        \item Reboot tests during idle and active charging
-                        \item Firmware version reported after reboot
-                        \item Time to confirmed boot and rollback rate
-                        \item Chargers that stop reporting
-                \end{itemize}%
-            }
-        \end{minipage}\hfill
-        \begin{minipage}[t]{0.485\textwidth}
-            \accentcard{Ink}{RowTint}{When to pause}{%
-                Agree on rollback, stall, and offline limits with product and operations teams before a wider rollout.\par
-                Pause the rollout right away if the small group crosses any limit.%
-            }
-        \end{minipage}
     \end{frame}
 
 % Slide 14: How I would ship OTA
