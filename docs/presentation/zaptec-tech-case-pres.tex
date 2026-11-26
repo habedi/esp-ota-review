@@ -331,6 +331,11 @@ if (data_read == 0) {
     \bottomrule
         \end{tabularx}
         \endgroup
+        \vspace{2mm}
+        \accentcard{Ink}{RowTint}{What QEMU verifies}{%
+            Single-core ESP32, plain HTTP over emulated Ethernet, and Timer Group watchdogs disabled.\par
+            The stall test checks the idle timeout. The full update deadline still needs a test.%
+        }
     \end{frame}
 
 % Slide 7: Bug summary table
@@ -532,16 +537,21 @@ return err == ESP_OK ? finish_err : err;
     \end{frame}
 
 % Slide 13: Rollout policy
-    \begin{frame}{Use a canary/gradual deployment before a full rollout}
+    \begin{frame}{Check a Small Rollout Before Expanding}
         \begin{center}
             \begin{tikzpicture}[node distance=18mm]
                 \node[stage] (s1) {\textbf{Stage 1}\\Lab tests};
                 \node[stage,right=of s1] (s2) {\textbf{Stage 2}\\Small-group rollout};
                 \node[appstage,right=of s2] (s3) {\textbf{Stage 3}\\Full rollout};
                 \draw[transition] (s1) -- node[above,font=\scriptsize,color=Blue] {Pass} (s2);
-                \draw[transition] (s2) -- node[above,font=\scriptsize,color=Ink] {Healthy} (s3);
+                \draw[transition] (s2) -- node[above,font=\scriptsize,color=Ink] {Checks pass} (s3);
             \end{tikzpicture}
         \end{center}
+        \vspace{2mm}
+        \accentcard{Blue}{BlueTint}{Example Criteria for Expanding}{%
+            Review the small group after 48 hours. Expand if every charger reports a completed update and confirms its first-boot health checks, with zero rollbacks or charging safety faults.\par
+            Pause and investigate any failure, rollback, safety fault, or missing report.%
+        }
     \end{frame}
 
 % Slide 14: How I would ship OTA
@@ -604,6 +614,33 @@ return err == ESP_OK ? finish_err : err;
             \item I find AI can overengineer in many cases, so I try to keep the project modular and small.
             \item AI is like a great assistant that can do things on my behalf, but responsibility for the work is with me.
         \end{itemize}
+    \end{frame}
+
+    \section{Summary}
+
+% Slide 17: Answers to the README questions
+    \begin{frame}{Summary}
+        \begingroup
+        \renewcommand{\arraystretch}{1.24}
+        \footnotesize
+        \begin{tabularx}{\textwidth}{ >{\raggedright\arraybackslash}p{0.32\textwidth} X c }
+            \toprule
+            \rowcolor{Ink!10}
+            \textbf{Question} & \textbf{Answer} & \textbf{Slides} \\
+            \midrule
+            Are there bugs in the OTA implementation?
+            & Yes. Four bugs in the pinned SDK show up in the regression tests. & 2--7 \\
+            \rowcolor{RowTint}
+            What can go wrong when calling the wrapper?
+            & It can report false success, hide setup errors, erase the inactive slot on an HTTP error, or keep retrying a stalled download. & 2--5, 8 \\
+            Can the wrapper be used robustly?
+            & Not with the pinned wrapper function. Use a fixed SDK and step-by-step calls. Limit time and retries, and check that a reboot is safe. & 8--10 \\
+            \rowcolor{RowTint}
+            How do we make product OTA robust?
+            & Test recovery on real chargers, confirm first-boot health or roll back, and review a small rollout before expanding. & 11--14 \\
+            \bottomrule
+        \end{tabularx}
+        \endgroup
     \end{frame}
 
 \end{document}
