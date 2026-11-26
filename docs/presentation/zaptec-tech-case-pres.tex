@@ -158,7 +158,7 @@
     ] (card) {%
         \parbox[t][2.65cm][t]{\linewidth}{%
             \rightskip=0pt plus 1fil\hyphenpenalty=10000\exhyphenpenalty=10000
-            {\normalsize\bfseries\color{Blue}#1}\par\vspace{5pt}%
+                {\normalsize\bfseries\color{Blue}#1}\par\vspace{5pt}%
             {\footnotesize\color{Ink}#2}%
         }%
     };
@@ -317,17 +317,17 @@ if (data_read == 0) {
         \begin{tabularx}{\textwidth}{ X c c c }
     \toprule
     \rowcolor{Ink!10}
-    \textbf{Case}                      & \textbf{Assigned SDK}                             & \textbf{Local fixes} & \textbf{v6.1.1}             \\
+    \textbf{Case}                      & \textbf{Assigned SDK} & \textbf{Local fixes} & \textbf{v6.1.1} \\
     \midrule
-    Good download and image check      & \passpill{Pass}                        & \passpill{Pass}      & \passpill{Pass}             \\
+    Good download and image check      & \passpill{Pass}       & \passpill{Pass}      & \passpill{Pass} \\
     \rowcolor{RowTint}
-    Boot selection fails (injected)    & \failpill{Fail} & \passpill{Pass} & \passpill{Pass} \\
-    Memory allocation fails (injected) & \failpill{Fail} & \passpill{Pass} & \passpill{Pass} \\
+    Boot selection fails (injected)    & \failpill{Fail}       & \passpill{Pass}      & \passpill{Pass} \\
+    Memory allocation fails (injected) & \failpill{Fail}       & \passpill{Pass}      & \passpill{Pass} \\
     \rowcolor{RowTint}
-    HTTP 404 response                  & \failpill{Fail} & \passpill{Pass} & \passpill{Pass} \\
-    HTTP 500 response                  & \failpill{Fail} & \passpill{Pass} & \passpill{Pass} \\
+    HTTP 404 response                  & \failpill{Fail}       & \passpill{Pass}      & \passpill{Pass} \\
+    HTTP 500 response                  & \failpill{Fail}       & \passpill{Pass}      & \passpill{Pass} \\
     \rowcolor{RowTint}
-    Stalled download (no deadline)     & \failpill{Fail} & \passpill{Pass} & \failpill{Fail} \\
+    Stalled download (no deadline)     & \failpill{Fail}       & \passpill{Pass}      & \failpill{Fail} \\
     \bottomrule
         \end{tabularx}
         \endgroup
@@ -485,7 +485,7 @@ return err == ESP_OK ? finish_err : err;
     \textbf{Fault case} & \textbf{Expected result}                                                   \\
     \midrule
     Network stalls, drops, and cut-off downloads
-    & The update stops in the time limit. The old firmware still works.      \\
+    & The update stops in the time limit. The old firmware still works.          \\
     \rowcolor{RowTint}
     Bad certificate or unapproved image
     & The update is rejected. Current firmware stays usable.                     \\
@@ -584,12 +584,12 @@ return err == ESP_OK ? finish_err : err;
             \begin{column}{0.50\textwidth}
                 \accentcard{Ink}{RowTint}{Code and upstream links}{%
                     \begin{itemize}
-                                \setlength{\itemsep}{2pt}\setlength{\topsep}{2pt}\setlength{\parsep}{0pt}
-                            \item \pinnedcode{}{OTA source (given for review) at \code{7ad199d14a}}
-                            \item \examplecode{}{Caller example (given for review) at \code{07bfc09d0c}}
-                            \item \extlink{https://github.com/espressif/esp-idf/issues/12635}{Boot-selection issue \#12635}
-                            \item \extlink{https://github.com/espressif/esp-idf/issues/7058}{HTTP status issues \#7058} and \extlink{https://github.com/espressif/esp-idf/issues/8195}{\#8195}
-                            \item \extlink{https://github.com/espressif/esp-idf/issues/6364}{Time limit issue \#6364}
+                        \setlength{\itemsep}{2pt}\setlength{\topsep}{2pt}\setlength{\parsep}{0pt}
+                        \item \pinnedcode{}{OTA source (given for review) at \code{7ad199d14a}}
+                        \item \examplecode{}{Caller example (given for review) at \code{07bfc09d0c}}
+                        \item \extlink{https://github.com/espressif/esp-idf/issues/12635}{Boot-selection issue \#12635}
+                        \item \extlink{https://github.com/espressif/esp-idf/issues/7058}{HTTP status issues \#7058} and \extlink{https://github.com/espressif/esp-idf/issues/8195}{\#8195}
+                        \item \extlink{https://github.com/espressif/esp-idf/issues/6364}{Time limit issue \#6364}
                     \end{itemize}%
                 }
             \end{column}
@@ -616,6 +616,7 @@ return err == ESP_OK ? finish_err : err;
         \end{itemize}
     \end{frame}
 
+
     \section{Summary}
 
 % Slide 17: Answers to the README questions
@@ -626,10 +627,10 @@ return err == ESP_OK ? finish_err : err;
         \begin{tabularx}{\textwidth}{ >{\raggedright\arraybackslash}p{0.32\textwidth} X c }
             \toprule
             \rowcolor{Ink!10}
-            \textbf{Question} & \textbf{Answer} & \textbf{Slides} \\
+            \textbf{Question} & \textbf{Answer}                                                                                                                        & \textbf{Slides} \\
             \midrule
             Are there bugs in the OTA implementation?
-            & Yes. Four bugs in the pinned SDK show up in the regression tests. & 2--7 \\
+            & Yes. Four bugs in the pinned SDK show up in the regression tests.                                                                      & 2--7            \\
             \rowcolor{RowTint}
             What can go wrong when calling the wrapper?
             & It can report false success, hide setup errors, erase the inactive slot on an HTTP error, or keep retrying a stalled download. & 2--5, 8 \\
