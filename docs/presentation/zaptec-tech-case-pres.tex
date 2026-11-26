@@ -53,8 +53,6 @@
     \end{beamercolorbox}%
 }
 
-\setbeameroption{hide notes}
-
 % Code listings style
 \lstset{
     language=C,
@@ -160,7 +158,7 @@
     ] (card) {%
         \parbox[t][2.65cm][t]{\linewidth}{%
             \rightskip=0pt plus 1fil\hyphenpenalty=10000\exhyphenpenalty=10000
-            {\normalsize\bfseries\color{Blue}#1}\par\vspace{5pt}%
+                {\normalsize\bfseries\color{Blue}#1}\par\vspace{5pt}%
             {\footnotesize\color{Ink}#2}%
         }%
     };
@@ -169,31 +167,9 @@
 
 \begin{document}
 
-% Slide 1: Table of contents
-    \begin{frame}{The Technical Case (Table of Contents)}
-        \begingroup
-        \renewcommand{\arraystretch}{1.45}
-        \small
-        \begin{tabularx}{\textwidth}{@{}l >{\raggedright\arraybackslash}X r@{}}
-            \toprule
-            & \textbf{Questions (from the main README)} & \textbf{Slides} \\
-            \midrule
-            Q1 & Are there bugs in the OTA implementation? & \hyperlink{ota-bugs}{\textcolor{Blue}{3--8}} \\
-            Q2 & What can go wrong when calling the \code{esp\_https\_ota} wrapper as it's implemented now? & \hyperlink{ota-bugs}{\textcolor{Blue}{3--6}}, \hyperlink{ota-example}{\textcolor{Blue}{9}} \\
-            Q3 & How should we use \code{esp\_https\_ota} to ensure sufficient robustness? Is it even possible? & \hyperlink{ota-example}{\textcolor{Blue}{9--11}} \\
-            Q4 & How would we make sure that OTA in the product is robust enough? & \hyperlink{ota-hardware}{\textcolor{Blue}{12--15}} \\
-            \bottomrule
-        \end{tabularx}
-        \endgroup
-        \vspace{3mm}
-
-        {\footnotesize\color{Muted} The OTA overview is on slide 2, supplementary materials are on slide 16, and LLM use is on slide 17.}
-    \end{frame}
-
-
     \section{What can go wrong?}
 
-% Slide 2: Overview flow
+% Slide 1: Overview flow
     \begin{frame}{The OTA update stages (Preamble)}
         \begin{center}
             \begin{tikzpicture}[node distance=5mm]
@@ -214,22 +190,9 @@
                     {Charger firmware};
             \end{tikzpicture}
         \end{center}
-        \vspace{3mm}
-        \noindent
-        \begin{minipage}[t]{0.485\textwidth}
-            \accentcard{Blue}{BlueTint}{What the OTA component does}{%
-                The wrapper function (\pinnedcode{\#L381}{\code{esp\_https\_ota()}}) downloads the image, checks it, and selects the next boot slot.%
-            }
-        \end{minipage}\hfill
-        \begin{minipage}[t]{0.485\textwidth}
-            \accentcard{Ink}{RowTint}{What the charger does}{%
-                In the example \examplecode{\#L106-L114}{\code{simple\_ota\_example.c}}, a reboot happens as soon as \code{ESP\_OK} is returned. The charger then must decide if the reboot is safe and run first-boot checks.%
-            }
-        \end{minipage}
-        \note{Target time is 60 seconds. Show what the API covers and what the product owns. The example restarts right away when the wrapper returns success. Safe charging pauses and saved data safety belong to the charger firmware.}
     \end{frame}
 
-% Slide 3: Bug 1
+% Slide 2: Bug 1
     \begin{frame}[fragile,label=ota-bugs]{Boot selection can fail, but \code{ESP\_OK} is returned (Bug\#1)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.53\textwidth}
@@ -247,20 +210,15 @@ return err;
                 \end{lstlisting}
             \end{column}
             \begin{column}{0.44\textwidth}
-                \accentcard{Violet}{VioletTint}{Injected boot failure}{%
-                    Boot selection returned \code{ESP\_ERR\_FLASH\_OP\_FAIL} (\code{24577}). The OTA call returned \code{ESP\_OK} (\code{0}).%
-                }
-                \vspace{2mm}
                 \accentcard{Ink}{RowTint}{Why this happens}{%
                     An inner \code{err} variable shadows the outer error variable at \pinnedcode{\#L360}{line 360}. The function logs the error and returns \code{ESP\_OK}.\par
                     Issue \extlink{https://github.com/espressif/esp-idf/issues/12635}{\#12635} reports this bug. The \extlink{https://github.com/espressif/esp-idf/commit/d778b07b2213370e1603d1aadf7b60393b3f7569}{v5.1.3} fix updates the outer variable.%
                 }
             \end{column}
         \end{columns}
-        \note{Target time is 2 minutes. Point out the outer and inner err variables in esp\_https\_ota\_finish. The fix writes to the outer variable. Notice esp\_ota\_set\_boot\_partition validates the image a second time, so a bootloader\_mmap failure under memory or MMU pressure (issue 16968) can trigger this bug in practice. The injected test shows false success. Physical flash failure and next-boot behavior on real hardware are still untested. Upstream issue 12635 reports the same bug.}
     \end{frame}
 
-% Slide 4: Bug 2
+% Slide 3: Bug 2
     \begin{frame}[fragile]{Setup loses the exact error (Bug\#2)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.55\textwidth}
@@ -275,20 +233,15 @@ if (https_ota_handle == NULL) {
                 \end{lstlisting}
             \end{column}
             \begin{column}{0.42\textwidth}
-                \accentcard{Violet}{VioletTint}{Injected memory failure}{%
-                    The test expected \code{ESP\_ERR\_NO\_MEM} (\code{257}). The wrapper function returned \code{ESP\_FAIL} (\code{-1}).%
-                }
-                \vspace{2.5mm}
                 \accentcard{Ink}{RowTint}{Why this matters}{%
                     The header \pinnedhdr{\#L53-L60}{\code{esp\_https\_ota.h}} (lines 53 to 60) documents specific error codes.\par
                     The wrapper gives the retry logic a generic failure code when setup fails.%
                 }
             \end{column}
         \end{columns}
-        \note{Target time is 75 seconds. Look at esp\_https\_ota right after begin fails. Returning the exact error helps the caller pick a smart retry rule. The test forces calloc inside the component to fail.}
     \end{frame}
 
-% Slide 5: Bug 3
+% Slide 4: Bug 3
     \begin{frame}[fragile]{HTTP errors can start a flash update (Bug\#3)}
         \begin{center}
             \begin{tikzpicture}[node distance=5mm]
@@ -321,10 +274,9 @@ if (process_again(status_code)) {
                 }
             \end{column}
         \end{columns}
-        \note{Target time is 105 seconds. Show \_http\_handle\_response\_code and the first branch of esp\_https\_ota\_perform. Note that esp\_ota\_begin with OTA\_SIZE\_UNKNOWN erases the passive slot before checking the HTTP body. Also note that \_http\_connect retries HTTP 401 with no limit and does not enforce redirect limits in either 7ad199d14a or v6.1.1. Checking only the final error would hide the flash erase.}
     \end{frame}
 
-% Slide 6: Bug 4
+% Slide 5: Bug 4
     \begin{frame}[fragile]{The wrapper has no overall time limit (Bug\#4)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.54\textwidth}
@@ -351,16 +303,11 @@ if (data_read == 0) {
                     A read timeout leaves \code{errno} at zero in \code{7ad199d14a} and returns \code{-ESP\_ERR\_HTTP\_EAGAIN} in \code{v6.1.1}.\par
                     \pinnedcode{\#L398-L403}{\code{esp\_https\_ota()}} loops in \code{while (1)} with no deadline.%
                 }
-                \vspace{2.5mm}
-                \accentcard{Ink}{RowTint}{QEMU stall test}{%
-                    Both unpatched builds retry until the server closes the connection. The local no-progress guard returns \code{ESP\_ERR\_TIMEOUT} (\code{263}).%
-                }
             \end{column}
         \end{columns}
-        \note{Target time is 75 seconds. Walk through esp\_https\_ota\_perform at lines 285 to 306 and the while loop in esp\_https\_ota at lines 398 to 403. In QEMU, a stalled 200 stream triggers 14 read timeouts on 7ad199d14a and 15 on v6.1.1 until the test server closes after 8 seconds. The local fix stops with ESP\_ERR\_TIMEOUT (263) after 4 timeouts.}
     \end{frame}
 
-% Slide 7: QEMU results
+% Slide 6: QEMU results
     \begin{frame}{One baseline and five tests (to reproduce the bugs)}
         \begingroup
         \setlength{\aboverulesep}{0pt}
@@ -370,28 +317,28 @@ if (data_read == 0) {
         \begin{tabularx}{\textwidth}{ X c c c }
     \toprule
     \rowcolor{Ink!10}
-    \textbf{Case}                      & \textbf{Assigned SDK}                             & \textbf{Local fixes} & \textbf{v6.1.1}             \\
+    \textbf{Case}                      & \textbf{Assigned SDK} & \textbf{Local fixes} & \textbf{v6.1.1} \\
     \midrule
-    Good download and image check      & \passpill{Pass} (\code{0})                        & \passpill{Pass}      & \passpill{Pass}             \\
+    Good download and image check      & \passpill{Pass}       & \passpill{Pass}      & \passpill{Pass} \\
     \rowcolor{RowTint}
-    Boot selection fails (injected)    & \failpill{Fail} (\code{0}, expected \code{24577}) & \passpill{Pass} & \passpill{Pass} \\
-    Memory allocation fails (injected) & \failpill{Fail} (\code{-1}, expected \code{257}) & \passpill{Pass} & \passpill{Pass} \\
+    Boot selection fails (injected)    & \failpill{Fail}       & \passpill{Pass}      & \passpill{Pass} \\
+    Memory allocation fails (injected) & \failpill{Fail}       & \passpill{Pass}      & \passpill{Pass} \\
     \rowcolor{RowTint}
-    HTTP 404 response                  & \failpill{Fail} (\code{5379}, \code{begin=1})     & \passpill{Pass} & \passpill{Pass} \\
-    HTTP 500 response                  & \failpill{Fail} (\code{5379}, \code{begin=1})     & \passpill{Pass} & \passpill{Pass} \\
+    HTTP 404 response                  & \failpill{Fail}       & \passpill{Pass}      & \passpill{Pass} \\
+    HTTP 500 response                  & \failpill{Fail}       & \passpill{Pass}      & \passpill{Pass} \\
     \rowcolor{RowTint}
-    Stalled download (no deadline)     & \failpill{Fail} (\code{-1}, expected \code{263})  & \passpill{Pass} & \failpill{Fail} (\code{-1}) \\
+    Stalled download (no deadline)     & \failpill{Fail}       & \passpill{Pass}      & \failpill{Fail} \\
     \bottomrule
         \end{tabularx}
         \endgroup
-        \par\vspace{3mm}
-        \accentcard{Ink}{RowTint}{Test limits}{%
-            Single-core ESP32 QEMU over HTTP with Timer Group watchdogs disabled. \code{begin=1} means one call to \code{esp\_ota\_begin()}.%
+        \vspace{2mm}
+        \accentcard{Ink}{RowTint}{Some test implementation details}{%
+            Single-core ESP32, plain HTTP over emulated Ethernet, and Timer Group watchdogs disabled.\par
+            The stall test checks the idle timeout. The full update deadline still needs a test.%
         }
-        \note{Target time is 90 seconds. A language model flagged paths, which I checked against the pinned SDK and QEMU results. The baseline stops after boot-slot selection. The two unpatched builds retry the stalled download until the server closes the connection.}
     \end{frame}
 
-% Slide 8: Bug summary table
+% Slide 7: Bug summary table
     \begin{frame}{Bugs, fixes, and upstream reports}
         \begingroup
         \setlength{\aboverulesep}{0pt}
@@ -428,13 +375,12 @@ if (data_read == 0) {
     \bottomrule
         \end{tabularx}
         \endgroup
-        \note{Target time is 45 seconds. The fix source column points to code. Slide 7 shows which builds ran in QEMU.}
     \end{frame}
 
 
     \section{How should the application call it?}
 
-% Slide 9: Example analysis
+% Slide 8: Example analysis
     \begin{frame}[fragile,label=ota-example]{Why the code in \code{simple\_ota\_example.c} is not reliable enough?}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.52\textwidth}
@@ -461,10 +407,9 @@ if (ret == ESP_OK) {
                 }
             \end{column}
         \end{columns}
-        \note{Target time is 75 seconds. Answer questions 2 and 3 from the brief. The example restarts on reported success without checking whether the charger is active.}
     \end{frame}
 
-% Slide 10: Staged API sketch
+% Slide 9: Staged API sketch
     \begin{frame}[fragile]{Step-by-step calls give more control}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.55\textwidth}
@@ -499,10 +444,9 @@ return err == ESP_OK ? finish_err : err;
                 }
             \end{column}
         \end{columns}
-        \note{Target time is 105 seconds. Rejecting an oversized image is expected. The robustness gap is the late rejection, which can leave the inactive slot unusable. The pinned SDK erases the whole slot up front. ESP-IDF v6.1.1 erases as it writes by default and can still fail late. With bulk erase and a known image length, v6.1.1 rejects an oversized erase before modifying flash. Check the release image size against the target slot before starting OTA. The sketch uses finish for cleanup on 7ad199d14a. Use abort on error when the SDK provides it. The application must also serialize OTA (issue 18127) and keep the OTA task stack in internal RAM (issue 10437).}
     \end{frame}
 
-% Slide 11: Staged API limitations
+% Slide 10: Staged API limitations
     \begin{frame}{The caller still needs a fixed SDK}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.50\textwidth}
@@ -523,13 +467,12 @@ return err == ESP_OK ? finish_err : err;
                 }
             \end{column}
         \end{columns}
-        \note{Target time is 90 seconds. One worker task keeps the charger responsive during downloads. Beyond the four core bugs, 7ad199d14a allows HTTPS downgrades (commit eef3b0bf) and blocks certificate bundles (issue 5504). Newer SDKs such as v6.1.1 still have unguarded redirect loops in \_http\_connect and open esp\_ota\_ops bugs (issues 19413 and 19439).}
     \end{frame}
 
 
     \section{How do we test charger OTA?}
 
-% Slide 12: Hardware verification matrix
+% Slide 11: Hardware verification matrix
     \begin{frame}[label=ota-hardware]{Test recovery on real hardware}
         \begingroup
         \setlength{\aboverulesep}{0pt}
@@ -542,7 +485,7 @@ return err == ESP_OK ? finish_err : err;
     \textbf{Fault case} & \textbf{Expected result}                                                   \\
     \midrule
     Network stalls, drops, and cut-off downloads
-    & The update stops in the time limit. The old firmware still works.      \\
+    & The update stops in the time limit. The old firmware still works.          \\
     \rowcolor{RowTint}
     Bad certificate or unapproved image
     & The update is rejected. Current firmware stays usable.                     \\
@@ -554,14 +497,9 @@ return err == ESP_OK ? finish_err : err;
     \bottomrule
         \end{tabularx}
         \endgroup
-        \vspace{2.5mm}
-        \accentcard{Blue}{BlueTint}{Before testing}{%
-            Use production TLS, watchdog, and bootloader settings; test real heap load (\extlink{https://github.com/espressif/esp-idf/issues/16968}{\#16968}) and older (deployed) builds (\extlink{https://github.com/espressif/esp-idf/issues/9987}{\#9987}, \extlink{https://github.com/espressif/esp-idf/issues/17595}{\#17595}).%
-        }
-        \note{Target time is 105 seconds. Describe a hardware bench with network faults, power cuts, and charging checks. Include dual-core flash watchdog checks (issues 10890 and 14450), realistic firmware sizes under heap and MMU load (issue 16968), and upgrades from older field firmware (issues 9987 and 17595). Agree on update time limits, charging pause rules, and recovery goals before testing. QEMU disables watchdogs and runs one core over HTTP.}
     \end{frame}
 
-% Slide 13: Rollback flow
+% Slide 12: Rollback flow
     \begin{frame}{A failed first boot must roll back}
         \begin{center}
             \begin{tikzpicture}[node distance=9mm]
@@ -596,43 +534,27 @@ return err == ESP_OK ? finish_err : err;
                 A reset before confirmation rolls back if a previous image can boot.%
             }
         \end{minipage}
-        \note{Target time is 75 seconds. A healthy image calls esp\_ota\_mark\_app\_valid\_cancel\_rollback. A failed test requests rollback. Watch for open issue 19413, where a retry after a failed otadata write can return ESP\_OK without confirming the running firmware. A reset before confirmation also rolls back when a good old image exists. Test this on real hardware.}
     \end{frame}
 
-% Slide 14: Rollout policy
-    \begin{frame}{Use a canary/gradual deployment before a full rollout}
+% Slide 13: Rollout policy
+    \begin{frame}{Check a Small Rollout Before Expanding}
         \begin{center}
             \begin{tikzpicture}[node distance=18mm]
                 \node[stage] (s1) {\textbf{Stage 1}\\Lab tests};
                 \node[stage,right=of s1] (s2) {\textbf{Stage 2}\\Small-group rollout};
                 \node[appstage,right=of s2] (s3) {\textbf{Stage 3}\\Full rollout};
                 \draw[transition] (s1) -- node[above,font=\scriptsize,color=Blue] {Pass} (s2);
-                \draw[transition] (s2) -- node[above,font=\scriptsize,color=Ink] {Healthy} (s3);
+                \draw[transition] (s2) -- node[above,font=\scriptsize,color=Ink] {Checks pass} (s3);
             \end{tikzpicture}
         \end{center}
-        \vspace{3mm}
-        \noindent
-        \begin{minipage}[t]{0.485\textwidth}
-            \accentcard{Blue}{BlueTint}{What to keep an eye on}{%
-                \begin{itemize}
-                            \setlength{\itemsep}{1pt}\setlength{\topsep}{2pt}\setlength{\parsep}{0pt}
-                        \item Reboot tests during idle and active charging
-                        \item Firmware version reported after reboot
-                        \item Time to confirmed boot and rollback rate
-                        \item Chargers that stop reporting
-                \end{itemize}%
-            }
-        \end{minipage}\hfill
-        \begin{minipage}[t]{0.485\textwidth}
-            \accentcard{Ink}{RowTint}{When to pause}{%
-                Agree on rollback, stall, and offline limits with product and operations teams before a wider rollout.\par
-                Pause the rollout right away if the small group crosses any limit.%
-            }
-        \end{minipage}
-        \note{Target time is 45 seconds. Agree on pause limits with product and operations teams. Always read the firmware version from the charger after it reboots.}
+        \vspace{2mm}
+        \accentcard{Blue}{BlueTint}{Example Criteria for Expanding}{%
+            Review the small group after 48 hours. Expand if every charger reports a completed update and confirms its first-boot health checks, with zero rollbacks or charging safety faults.\par
+            Pause and investigate any failure, rollback, safety fault, or missing report.%
+        }
     \end{frame}
 
-% Slide 15: How I would ship OTA
+% Slide 14: How I would ship OTA
     \begin{frame}{How I would ship OTA}
         \vspace{1mm}
         \noindent
@@ -651,24 +573,23 @@ return err == ESP_OK ? finish_err : err;
                 Test safe charging, first-boot checks, and remote recovery on real hardware.%
             }
         \end{minipage}
-        \note{Target time is 90 seconds. Tie each point back to the four questions in the brief. Note that upgrading ESP-IDF fixes older bugs, yet newer releases still add regressions such as issues 13065 and 19439, so automated fault tests remain necessary. Invite questions on time limits, rollback checks, and fault tests.}
     \end{frame}
 
 
     \section{Supplementary materials}
 
-% Slide 16: Source and reproduction
+% Slide 15: Source and reproduction
     \begin{frame}{Supplementary materials (source code and test instructions)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.50\textwidth}
                 \accentcard{Ink}{RowTint}{Code and upstream links}{%
                     \begin{itemize}
-                                \setlength{\itemsep}{2pt}\setlength{\topsep}{2pt}\setlength{\parsep}{0pt}
-                            \item \pinnedcode{}{OTA source (given for review) at \code{7ad199d14a}}
-                            \item \examplecode{}{Caller example (given for review) at \code{07bfc09d0c}}
-                            \item \extlink{https://github.com/espressif/esp-idf/issues/12635}{Boot-selection issue \#12635}
-                            \item \extlink{https://github.com/espressif/esp-idf/issues/7058}{HTTP status issues \#7058} and \extlink{https://github.com/espressif/esp-idf/issues/8195}{\#8195}
-                            \item \extlink{https://github.com/espressif/esp-idf/issues/6364}{Time limit issue \#6364}
+                        \setlength{\itemsep}{2pt}\setlength{\topsep}{2pt}\setlength{\parsep}{0pt}
+                        \item \pinnedcode{}{OTA source (given for review) at \code{7ad199d14a}}
+                        \item \examplecode{}{Caller example (given for review) at \code{07bfc09d0c}}
+                        \item \extlink{https://github.com/espressif/esp-idf/issues/12635}{Boot-selection issue \#12635}
+                        \item \extlink{https://github.com/espressif/esp-idf/issues/7058}{HTTP status issues \#7058} and \extlink{https://github.com/espressif/esp-idf/issues/8195}{\#8195}
+                        \item \extlink{https://github.com/espressif/esp-idf/issues/6364}{Time limit issue \#6364}
                     \end{itemize}%
                 }
             \end{column}
@@ -680,10 +601,9 @@ return err == ESP_OK ? finish_err : err;
                 }
             \end{column}
         \end{columns}
-        \note{Use this slide during questions and answers for commit hashes, issue numbers, or test commands.}
     \end{frame}
 
-% Slide 17: LLM use
+% Slide 16: LLM use
     \begin{frame}{AI/LLM use}
         \begin{itemize}
             \item I use AI to find (possible) bugs and implement things like tests, boilerplating, and prototyping.
@@ -694,6 +614,34 @@ return err == ESP_OK ? finish_err : err;
             \item I find AI can overengineer in many cases, so I try to keep the project modular and small.
             \item AI is like a great assistant that can do things on my behalf, but responsibility for the work is with me.
         \end{itemize}
+    \end{frame}
+
+
+    \section{Summary}
+
+% Slide 17: Answers to the README questions
+    \begin{frame}{Summary}
+        \begingroup
+        \renewcommand{\arraystretch}{1.24}
+        \footnotesize
+        \begin{tabularx}{\textwidth}{ >{\raggedright\arraybackslash}p{0.32\textwidth} X c }
+            \toprule
+            \rowcolor{Ink!10}
+            \textbf{Question} & \textbf{Answer}                                                                                                                        & \textbf{Slides} \\
+            \midrule
+            Are there bugs in the OTA implementation?
+            & Yes. Four bugs in the pinned SDK show up in the regression tests.                                                                      & 2--7            \\
+            \rowcolor{RowTint}
+            What can go wrong when calling the wrapper?
+            & It can report false success, hide setup errors, erase the inactive slot on an HTTP error, or keep retrying a stalled download. & 2--5, 8 \\
+            Can the wrapper be used robustly?
+            & Not with the pinned wrapper function. Use a fixed SDK and step-by-step calls. Limit time and retries, and check that a reboot is safe. & 8--10 \\
+            \rowcolor{RowTint}
+            How do we make product OTA robust?
+            & Test recovery on real chargers, confirm first-boot health or roll back, and review a small rollout before expanding. & 11--14 \\
+            \bottomrule
+        \end{tabularx}
+        \endgroup
     \end{frame}
 
 \end{document}

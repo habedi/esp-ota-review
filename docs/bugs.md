@@ -17,6 +17,20 @@ The information about the versions of the ESP-IDF SDK that are pinned as Git sub
 | 3| HTTP errors can start a flash update | `_http_handle_response_code()` ([L60-L110](https://github.com/espressif/esp-idf/blob/7ad199d14a5d0fd2f61193c0f8a51a5d2bfa2c00/components/esp_https_ota/src/esp_https_ota.c#L60-L110)) returns `ESP_OK` for HTTP 404 and 500. OTA then calls `esp_ota_begin()` ([L271](https://github.com/espressif/esp-idf/blob/7ad199d14a5d0fd2f61193c0f8a51a5d2bfa2c00/components/esp_https_ota/src/esp_https_ota.c#L271)), which erases the passive OTA slot, and only fails later at image validation. HTTP 401 can also retry without a limit in `_http_connect()`. | [v4.4](https://github.com/espressif/esp-idf/commit/3c7991813d8a8f47009305a63d7d8d0d422fb8fb) source | [#7058](https://github.com/espressif/esp-idf/issues/7058), [#8195](https://github.com/espressif/esp-idf/issues/8195) (related) |
 | 4| The wrapper has no overall deadline | `esp_https_ota_perform()` ([L285-L306](https://github.com/espressif/esp-idf/blob/7ad199d14a5d0fd2f61193c0f8a51a5d2bfa2c00/components/esp_https_ota/src/esp_https_ota.c#L285-L306)) returns `ESP_ERR_HTTPS_OTA_IN_PROGRESS` on a read timeout (or `-ESP_ERR_HTTP_EAGAIN` in `v6.1.1`). `esp_https_ota()` loops on this in `while (1)` ([L398-L403](https://github.com/espressif/esp-idf/blob/7ad199d14a5d0fd2f61193c0f8a51a5d2bfa2c00/components/esp_https_ota/src/esp_https_ota.c#L398-L403)) with no total time limit. Over plain TCP, a clean peer close returns `-1` in `tcp_read()`, whereas a stalled HTTP stream loops through repeated read timeouts on both `7ad199d14a` (`14` timeouts in QEMU) and `v6.1.1` (`15` timeouts in QEMU) until the server drops the connection. | Not fixed in `v6.1.1`; a local fix verified in QEMU | [#6364](https://github.com/espressif/esp-idf/issues/6364) |
 
+### Local Fixes and ESP-IDF v6.1.1
+
+The test build applies four changes to a generated copy of the pinned SDK source.
+Both the local build and v6.1.1 return the boot-selection and setup errors in the test cases, and both reject HTTP 404 and 500 before erasing the inactive slot.
+The local HTTP check requires `200 OK` after the existing redirect and authentication handling.
+v6.1.1 handles more status codes and limits `401` authentication retries. [Local patch](../tests/reproduce-bugs/CMakeLists.txt)
+
+The local wrapper checks for stalled progress and a 120-second elapsed limit between download calls after setup.
+With a 500 ms HTTP timeout, the stall test uses a 1.5-second idle limit.
+The local build returns `ESP_ERR_TIMEOUT` after four read timeouts.
+v6.1.1 keeps retrying until the test server closes the connection, then returns `ESP_FAIL` after 15 read timeouts.
+The test exercises the idle limit.
+The full update deadline still needs a test. [QEMU results](qemu-results.md)
+
 ### Upstream Proposal for Stalled Downloads
 
 [PR #19246](https://github.com/espressif/esp-idf/pull/19246) is an open proposal for Bug 4.
