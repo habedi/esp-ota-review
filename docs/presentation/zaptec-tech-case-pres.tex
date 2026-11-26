@@ -637,8 +637,8 @@ return err == ESP_OK ? finish_err : err;
             Can the wrapper be used robustly?
             & Not with the pinned wrapper function. Use a fixed SDK and step-by-step calls. Limit time and retries, and check that a reboot is safe. & 8--10 \\
             \rowcolor{RowTint}
-            How do we make product OTA robust?
-            & Test recovery on real chargers, confirm first-boot health or roll back, and review a small rollout before expanding. & 11--14 \\
+            How do we make the OTA update robust in production?
+            & Test recovery on real chargers, confirm first-boot health or roll back, and review a small rollout before a full rollout. & 11--14 \\
             \bottomrule
         \end{tabularx}
         \endgroup
