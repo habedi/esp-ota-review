@@ -1,4 +1,4 @@
-## Zaptec's Case (ESP-IDF OTA Reliability Review)
+## ESP-IDF OTA Reliability Review (Zaptec's Case)
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/habedi/esp-ota-review/tests.yml?label=tests&style=flat&labelColor=282c34&logo=github&logoColor=white)](https://github.com/habedi/esp-ota-review/actions/workflows/tests.yml)
 [![Documentation](https://img.shields.io/badge/docs-latest-507ec6?style=flat&labelColor=282c34&logo=read-the-docs&logoColor=white)](docs)

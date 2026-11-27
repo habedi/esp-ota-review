@@ -167,10 +167,10 @@
 
 \begin{document}
 
-    \section{What can go wrong?}
+    \section{What Can Go Wrong?}
 
 % Slide 1: Overview flow
-    \begin{frame}{The OTA update stages (Preamble)}
+    \begin{frame}{OTA Update Stages}
         \begin{center}
             \begin{tikzpicture}[node distance=5mm]
                 \node[stage] (download) {Download\\and write};
@@ -193,7 +193,7 @@
     \end{frame}
 
 % Slide 2: Bug 1
-    \begin{frame}[fragile,label=ota-bugs]{Boot selection can fail, but \code{ESP\_OK} is returned (Bug\#1)}
+    \begin{frame}[fragile,label=ota-bugs]{Boot Selection Can Fail, But \code{ESP\_OK} Is Returned (Bug\#1)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.53\textwidth}
                 \srcbar{\code{esp\_https\_ota\_finish()}}{\pinnedcode{\#L340-L366}{lines 340 to 366}}
@@ -219,7 +219,7 @@ return err;
     \end{frame}
 
 % Slide 3: Bug 2
-    \begin{frame}[fragile]{Setup loses the exact error (Bug\#2)}
+    \begin{frame}[fragile]{Setup Loses the Exact Error (Bug\#2)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.55\textwidth}
                 \srcbar{\code{esp\_https\_ota()}}{\pinnedcode{\#L392-L396}{lines 392 to 396}}
@@ -242,7 +242,7 @@ if (https_ota_handle == NULL) {
     \end{frame}
 
 % Slide 4: Bug 3
-    \begin{frame}[fragile]{HTTP errors can start a flash update (Bug\#3)}
+    \begin{frame}[fragile]{HTTP Errors Can Start a Flash Update (Bug\#3)}
         \begin{center}
             \begin{tikzpicture}[node distance=5mm]
                 \node[rejected] (http) {HTTP 404\\or 500};
@@ -277,7 +277,7 @@ if (process_again(status_code)) {
     \end{frame}
 
 % Slide 5: Bug 4
-    \begin{frame}[fragile]{The wrapper has no overall time limit (Bug\#4)}
+    \begin{frame}[fragile]{The Wrapper Has No Overall Time Limit (Bug\#4)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.54\textwidth}
                 \srcbar{\code{esp\_https\_ota\_perform()}}{\pinnedcode{\#L285-L306}{lines 285 to 306, 398 to 403}}
@@ -308,7 +308,7 @@ if (data_read == 0) {
     \end{frame}
 
 % Slide 6: QEMU results
-    \begin{frame}{One baseline and five tests (to reproduce the bugs)}
+    \begin{frame}{QEMU Regression Results}
         \begingroup
         \setlength{\aboverulesep}{0pt}
         \setlength{\belowrulesep}{0pt}
@@ -332,14 +332,14 @@ if (data_read == 0) {
         \end{tabularx}
         \endgroup
         \vspace{2mm}
-        \accentcard{Ink}{RowTint}{Some test implementation details}{%
+        \accentcard{Ink}{RowTint}{QEMU Test Limits}{%
             Single-core ESP32, plain HTTP over emulated Ethernet, and Timer Group watchdogs disabled.\par
             The stall test checks the idle timeout. The full update deadline still needs a test.%
         }
     \end{frame}
 
 % Slide 7: Bug summary table
-    \begin{frame}{Bugs, fixes, and upstream reports}
+    \begin{frame}{Bugs, Fixes, and Upstream Reports}
         \begingroup
         \setlength{\aboverulesep}{0pt}
         \setlength{\belowrulesep}{0pt}
@@ -378,10 +378,10 @@ if (data_read == 0) {
     \end{frame}
 
 
-    \section{How should the application call it?}
+    \section{How Should the Application Call It?}
 
 % Slide 8: Example analysis
-    \begin{frame}[fragile,label=ota-example]{Why the code in \code{simple\_ota\_example.c} is not reliable enough?}
+    \begin{frame}[fragile,label=ota-example]{Where the OTA Example Falls Short}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.52\textwidth}
                 \srcbar{\code{simple\_ota\_example.c}}{\examplecode{\#L106-L114}{lines 106 to 114}}
@@ -392,7 +392,7 @@ if (ret == ESP_OK) {
 } else {
     ESP_LOGE(TAG, "Firmware upgrade failed");
 }
-(*@\bugline{while (1) \{}@*) // Stuck task; no retry
+(*@\bugline{while (1) \{}@*) // Waits without retrying
     (*@\bugline{vTaskDelay(1000 / portTICK\_PERIOD\_MS);}@*)
 (*@\bugline{\}}@*)
                 \end{lstlisting}
@@ -402,15 +402,15 @@ if (ret == ESP_OK) {
                     The example never confirms the new image. Startup can also \examplecode{\#L144-L152}{erase NVS} (including the credentials stored there).%
                 }
                 \vspace{2.5mm}
-                \accentcard{Violet}{VioletTint}{Can the wrapper be safe enough?}{%
-                    No. Not as things are right now. The wrapper function hides boot and setup errors, skips checks before flash erase, and has no overall time limit.%
+                \accentcard{Violet}{VioletTint}{Limits of the Pinned Wrapper}{%
+                    The pinned wrapper can hide boot and setup errors, erase flash after an HTTP error, and wait indefinitely.%
                 }
             \end{column}
         \end{columns}
     \end{frame}
 
 % Slide 9: Staged API sketch
-    \begin{frame}[fragile]{Step-by-step calls give more control}
+    \begin{frame}[fragile]{Step-by-step Calls Give More Control}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.55\textwidth}
                 \srcbar{Step-by-step caller sketch}{\pinnedcode{\#L210}{lines 210, 293}}
@@ -447,7 +447,7 @@ return err == ESP_OK ? finish_err : err;
     \end{frame}
 
 % Slide 10: Staged API limitations
-    \begin{frame}{The caller still needs a fixed SDK}
+    \begin{frame}{The Caller Still Needs a Fixed SDK}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.50\textwidth}
                 \accentcard{Ink}{RowTint}{Limits inside the pinned SDK}{%
@@ -470,10 +470,10 @@ return err == ESP_OK ? finish_err : err;
     \end{frame}
 
 
-    \section{How do we test charger OTA?}
+    \section{How Do We Test Charger OTA?}
 
 % Slide 11: Hardware verification matrix
-    \begin{frame}[label=ota-hardware]{Test recovery on real hardware}
+    \begin{frame}[label=ota-hardware]{Test Recovery on Real Hardware}
         \begingroup
         \setlength{\aboverulesep}{0pt}
         \setlength{\belowrulesep}{0pt}
@@ -500,7 +500,7 @@ return err == ESP_OK ? finish_err : err;
     \end{frame}
 
 % Slide 12: Rollback flow
-    \begin{frame}{A failed first boot must roll back}
+    \begin{frame}{A Failed First Boot Must Roll Back}
         \begin{center}
             \begin{tikzpicture}[node distance=9mm]
                 \node[stage] (boot) {Boot new image};
@@ -554,8 +554,8 @@ return err == ESP_OK ? finish_err : err;
         }
     \end{frame}
 
-% Slide 14: How I would ship OTA
-    \begin{frame}{How I would ship OTA}
+% Slide 14: How I Would Ship OTA
+    \begin{frame}{How I Would Ship OTA}
         \vspace{1mm}
         \noindent
         \begin{minipage}[t]{0.315\textwidth}
@@ -564,29 +564,29 @@ return err == ESP_OK ? finish_err : err;
             }
         \end{minipage}\hfill
         \begin{minipage}[t]{0.315\textwidth}
-            \pillarcard{Bounded caller}{%
+            \pillarcard{OTA Time Limits}{%
                 Run step-by-step calls in one task with time limits, few retries, and a safe reboot check.%
             }
         \end{minipage}\hfill
         \begin{minipage}[t]{0.315\textwidth}
-            \pillarcard{Hardware proof}{%
+            \pillarcard{Hardware Tests}{%
                 Test safe charging, first-boot checks, and remote recovery on real hardware.%
             }
         \end{minipage}
     \end{frame}
 
 
-    \section{Supplementary materials}
+    \section{Supplementary Materials}
 
 % Slide 15: Source and reproduction
-    \begin{frame}{Supplementary materials (source code and test instructions)}
+    \begin{frame}{Source Code and Test Instructions}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.50\textwidth}
                 \accentcard{Ink}{RowTint}{Code and upstream links}{%
                     \begin{itemize}
                         \setlength{\itemsep}{2pt}\setlength{\topsep}{2pt}\setlength{\parsep}{0pt}
-                        \item \pinnedcode{}{OTA source (given for review) at \code{7ad199d14a}}
-                        \item \examplecode{}{Caller example (given for review) at \code{07bfc09d0c}}
+                            \item \pinnedcode{}{OTA source at \code{7ad199d14a}}
+                            \item \examplecode{}{OTA example at \code{07bfc09d0c}}
                         \item \extlink{https://github.com/espressif/esp-idf/issues/12635}{Boot-selection issue \#12635}
                         \item \extlink{https://github.com/espressif/esp-idf/issues/7058}{HTTP status issues \#7058} and \extlink{https://github.com/espressif/esp-idf/issues/8195}{\#8195}
                         \item \extlink{https://github.com/espressif/esp-idf/issues/6364}{Time limit issue \#6364}
@@ -604,7 +604,7 @@ return err == ESP_OK ? finish_err : err;
     \end{frame}
 
 % Slide 16: LLM use
-    \begin{frame}{AI/LLM use}
+    \begin{frame}{How I Used AI}
         \begin{itemize}
             \item I use AI to find (possible) bugs and implement things like tests, boilerplating, and prototyping.
             \item I talk about the code and architecture with AI, and use it to find related issues, posts, and content online.
@@ -637,8 +637,8 @@ return err == ESP_OK ? finish_err : err;
             Can the wrapper be used robustly?
             & Not with the pinned wrapper function. Use a fixed SDK and step-by-step calls. Limit time and retries, and check that a reboot is safe. & 8--10 \\
             \rowcolor{RowTint}
-            How do we make product OTA robust?
-            & Test recovery on real chargers, confirm first-boot health or roll back, and review a small rollout before expanding. & 11--14 \\
+            How do we make the OTA update robust in production?
+            & Test recovery on real chargers, confirm first-boot health or roll back, and check results from a small group before expanding. & 11--14 \\
             \bottomrule
         \end{tabularx}
         \endgroup
