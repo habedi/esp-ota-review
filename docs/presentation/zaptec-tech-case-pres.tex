@@ -167,7 +167,7 @@
 
 \begin{document}
 
-    \section{What can go wrong?}
+    \section{What Can Go Wrong?}
 
 % Slide 1: Overview flow
     \begin{frame}{OTA Update Stages}
@@ -193,7 +193,7 @@
     \end{frame}
 
 % Slide 2: Bug 1
-    \begin{frame}[fragile,label=ota-bugs]{Boot selection can fail, but \code{ESP\_OK} is returned (Bug\#1)}
+    \begin{frame}[fragile,label=ota-bugs]{Boot Selection Can Fail, But \code{ESP\_OK} Is Returned (Bug\#1)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.53\textwidth}
                 \srcbar{\code{esp\_https\_ota\_finish()}}{\pinnedcode{\#L340-L366}{lines 340 to 366}}
@@ -219,7 +219,7 @@ return err;
     \end{frame}
 
 % Slide 3: Bug 2
-    \begin{frame}[fragile]{Setup loses the exact error (Bug\#2)}
+    \begin{frame}[fragile]{Setup Loses the Exact Error (Bug\#2)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.55\textwidth}
                 \srcbar{\code{esp\_https\_ota()}}{\pinnedcode{\#L392-L396}{lines 392 to 396}}
@@ -242,7 +242,7 @@ if (https_ota_handle == NULL) {
     \end{frame}
 
 % Slide 4: Bug 3
-    \begin{frame}[fragile]{HTTP errors can start a flash update (Bug\#3)}
+    \begin{frame}[fragile]{HTTP Errors Can Start a Flash Update (Bug\#3)}
         \begin{center}
             \begin{tikzpicture}[node distance=5mm]
                 \node[rejected] (http) {HTTP 404\\or 500};
@@ -277,7 +277,7 @@ if (process_again(status_code)) {
     \end{frame}
 
 % Slide 5: Bug 4
-    \begin{frame}[fragile]{The wrapper has no overall time limit (Bug\#4)}
+    \begin{frame}[fragile]{The Wrapper Has No Overall Time Limit (Bug\#4)}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.54\textwidth}
                 \srcbar{\code{esp\_https\_ota\_perform()}}{\pinnedcode{\#L285-L306}{lines 285 to 306, 398 to 403}}
@@ -339,7 +339,7 @@ if (data_read == 0) {
     \end{frame}
 
 % Slide 7: Bug summary table
-    \begin{frame}{Bugs, fixes, and upstream reports}
+    \begin{frame}{Bugs, Fixes, and Upstream Reports}
         \begingroup
         \setlength{\aboverulesep}{0pt}
         \setlength{\belowrulesep}{0pt}
@@ -378,7 +378,7 @@ if (data_read == 0) {
     \end{frame}
 
 
-    \section{How should the application call it?}
+    \section{How Should the Application Call It?}
 
 % Slide 8: Example analysis
     \begin{frame}[fragile,label=ota-example]{Where the OTA Example Falls Short}
@@ -410,7 +410,7 @@ if (ret == ESP_OK) {
     \end{frame}
 
 % Slide 9: Staged API sketch
-    \begin{frame}[fragile]{Step-by-step calls give more control}
+    \begin{frame}[fragile]{Step-by-step Calls Give More Control}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.55\textwidth}
                 \srcbar{Step-by-step caller sketch}{\pinnedcode{\#L210}{lines 210, 293}}
@@ -447,7 +447,7 @@ return err == ESP_OK ? finish_err : err;
     \end{frame}
 
 % Slide 10: Staged API limitations
-    \begin{frame}{The caller still needs a fixed SDK}
+    \begin{frame}{The Caller Still Needs a Fixed SDK}
         \begin{columns}[T,onlytextwidth]
             \begin{column}{0.50\textwidth}
                 \accentcard{Ink}{RowTint}{Limits inside the pinned SDK}{%
@@ -470,10 +470,10 @@ return err == ESP_OK ? finish_err : err;
     \end{frame}
 
 
-    \section{How do we test charger OTA?}
+    \section{How Do We Test Charger OTA?}
 
 % Slide 11: Hardware verification matrix
-    \begin{frame}[label=ota-hardware]{Test recovery on real hardware}
+    \begin{frame}[label=ota-hardware]{Test Recovery on Real Hardware}
         \begingroup
         \setlength{\aboverulesep}{0pt}
         \setlength{\belowrulesep}{0pt}
@@ -500,7 +500,7 @@ return err == ESP_OK ? finish_err : err;
     \end{frame}
 
 % Slide 12: Rollback flow
-    \begin{frame}{A failed first boot must roll back}
+    \begin{frame}{A Failed First Boot Must Roll Back}
         \begin{center}
             \begin{tikzpicture}[node distance=9mm]
                 \node[stage] (boot) {Boot new image};
@@ -554,8 +554,8 @@ return err == ESP_OK ? finish_err : err;
         }
     \end{frame}
 
-% Slide 14: How I would ship OTA
-    \begin{frame}{How I would ship OTA}
+% Slide 14: How I Would Ship OTA
+    \begin{frame}{How I Would Ship OTA}
         \vspace{1mm}
         \noindent
         \begin{minipage}[t]{0.315\textwidth}
@@ -576,7 +576,7 @@ return err == ESP_OK ? finish_err : err;
     \end{frame}
 
 
-    \section{Supplementary materials}
+    \section{Supplementary Materials}
 
 % Slide 15: Source and reproduction
     \begin{frame}{Source Code and Test Instructions}
