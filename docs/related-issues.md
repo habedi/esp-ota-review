@@ -77,6 +77,7 @@
 
 ### Low-level `esp_ota_ops` and Runtime Issues
 
+- Flash erase before allocation: The pinned `esp_ota_begin()` erases the target slot before allocating its tracking entry. If that allocation fails, the wrapper returns `ESP_ERR_NO_MEM` after the inactive slot has been erased. The existing allocation test fails the earlier allocation in `esp_https_ota_begin()`, so it covers a different path. This finding comes from source review. [Pinned `esp_ota_begin()`](../external/esp-idf-review/components/app_update/esp_ota_ops.c#L162) · [Allocation test results](qemu-results.md)
 - **No concurrent OTA lock in `v4.2.1`**: issue [#18127](https://github.com/espressif/esp-idf/issues/18127) (closed). In `v4.2.1`, `esp_ota_begin()`
   ([esp_ota_ops.c](https://github.com/espressif/esp-idf/blob/7ad199d14a5d0fd2f61193c0f8a51a5d2bfa2c00/components/app_update/esp_ota_ops.c#L129-L190))
   does not reject a second handle opened on the same target partition. Products that support updates over both HTTPS and Bluetooth must serialize OTA
